@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Doom-Clone</title>
+    <script src="./FudgeCore/FudgeCore.js"></script>
+    <script src="./FudgeAid/FudgeAid.js"></script>
+    <script src="./GameAssets/Bullet.js"></script>
+    <script src="./GameAssets/Player.js"></script>
+    <script src="./GameAssets/Wall.js"></script>
+    <script src="./GameAssets/Ground.js"></script>
+    <script src="./Menus/GameMenuManager.js"></script>
+    <script src="Main.js"></script>
+    <link rel="stylesheet" href="styles/test.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="invisible">
+    <div class="HUDContainer">
+        <div class="HUDElement">
+            <nav id="ammoPanel">100</nav>
+            <section>Ammo</section>
+        </div>
+        <div class="HUDElement">
+            <progress id="healthBar" value="100" max="100"></progress>
+            <section>Health</section>
+            <progress id="staminaBar" value="100" max="100"></progress>
+            <section>Stamina</section>
+        </div>
+        <div class="HUDElement">
+            <canvas id="portraitCanvas"></canvas>
+        </div>
+        <div class="HUDElement">
+            <nav>Pistol</nav>
+            <section>Weapon</section>
+        </div>
+        <div class="HUDElement">
+            <nav id="armorPanel">100%</nav>
+            <section>Armor</section>
+        </div>
+    </div>
+</header>
+<canvas id="game"></canvas>
+<img id="crosshair" src="icons/crosshair.svg">
+<h1 id="pausePrompt">Paused</h1>
+<h1 id="startPrompt" class="visible">Press Escape to start</h1>
+<img id="portrait" src="../DoomClone/spritesheets/faceSprites.png">
+<img id="ground" src="../DoomClone/spritesheets/groundTexture.png">
+<img id="pistol" src="../DoomClone/spritesheets/pistol.png">
+<img id="wall" src="../DoomClone/spritesheets/wall.png">
+</body>
+</html>
