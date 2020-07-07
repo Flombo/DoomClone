@@ -10,11 +10,13 @@ namespace doomClone {
             "Orange", f.ShaderFlat, new f.CoatColored(f.Color.CSS("orange"))
         );
         private range : number;
+        private damage : number;
         private readonly shotCollisionEvent : CustomEvent;
 
         constructor(startMatrix : f.Matrix4x4) {
             super("Ammo");
             this.range = 30;
+            this.damage = 5;
             this.shotCollisionEvent = new CustomEvent<any>("shotCollision")
             this.initBullet(startMatrix);
         }
@@ -37,14 +39,15 @@ namespace doomClone {
             let distanceToTravel: number = this.speed * f.Loop.timeFrameGame;
             this.mtxLocal.translateY(distanceToTravel);
             this.getParent().broadcastEvent(this.shotCollisionEvent);
+            this.range--;
         }
 
         public getRange() : number {
             return this.range;
         }
 
-        public decrementRange() : void {
-            this.range--;
+        public getDamage() : number {
+            return this.damage;
         }
 
         public removeEventListener() : void {

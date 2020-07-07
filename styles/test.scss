@@ -23,7 +23,7 @@ html{
             padding: 1%;
             visibility: visible;
             min-width: 100%;
-            max-height: 10vh;
+            max-height: 11vh;
             bottom: 0;
             background-image: url("../spritesheets/HUDBG.png");
             background-size: cover;
@@ -101,6 +101,7 @@ html{
 
         img{
             visibility: hidden;
+            display: none;
         }
     }
 }

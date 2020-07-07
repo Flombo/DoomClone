@@ -10,8 +10,10 @@ var doomClone;
                 let distanceToTravel = this.speed * f.Loop.timeFrameGame;
                 this.mtxLocal.translateY(distanceToTravel);
                 this.getParent().broadcastEvent(this.shotCollisionEvent);
+                this.range--;
             };
             this.range = 30;
+            this.damage = 5;
             this.shotCollisionEvent = new CustomEvent("shotCollision");
             this.initBullet(startMatrix);
         }
@@ -31,8 +33,8 @@ var doomClone;
         getRange() {
             return this.range;
         }
-        decrementRange() {
-            this.range--;
+        getDamage() {
+            return this.damage;
         }
         removeEventListener() {
             f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);

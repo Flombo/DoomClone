@@ -5,10 +5,15 @@ var doomClone;
     class Wall extends f.Node {
         constructor(player, x, y) {
             super("Wall");
-            this.playerCollisionRadius = 0.5;
+            this.playerCollisionRadius = 0.9;
             this.shotCollisionRadius = 0.9;
             this.player = player;
             this.initWall(x, y);
+            this.initSound();
+        }
+        async initSound() {
+            let explosionSound = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
+            this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
         }
         initWall(x, y) {
             let wallIMG = document.getElementById("wall");
@@ -18,9 +23,6 @@ var doomClone;
             wallTextureIMG.image = wallIMG;
             let wallTextureCoat = new f.CoatTextured();
             wallTextureCoat.texture = wallTextureIMG;
-            wallTextureCoat.repetition = true;
-            wallTextureCoat.tilingX = 30;
-            wallTextureCoat.tilingY = 30;
             let wallMaterial = new f.Material("Wall", f.ShaderTexture, wallTextureCoat);
             let wallComponentMat = new f.ComponentMaterial(wallMaterial);
             let wallComponentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
@@ -34,9 +36,9 @@ var doomClone;
             let projectiles = this.player.getCurrentBullets();
             projectiles.forEach(bullet => {
                 if (bullet.getRange() > 0) {
-                    bullet.decrementRange();
                     if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
                         this.player.deleteCertainBullet(bullet);
+                        this.componentAudioExplosion.play(true);
                     }
                 }
                 else {
