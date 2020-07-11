@@ -47,19 +47,19 @@ var doomClone;
             this.getParent().removeChild(bullet);
         }
         setHealth(health) {
-            this.healthBar.value = this.health;
             if (this.health + health > 0) {
                 if (health > 0) {
                     this.componentAudio.audio = this.pickUpSound;
                     this.componentAudio.play(true);
                 }
                 else {
-                    this.health += (health / this.armor);
+                    this.health += (health / (this.armor / 100));
                 }
             }
             else {
                 this.setIsDeadTrue();
             }
+            this.healthBar.value = this.health;
         }
         getIsDead() {
             return this.isDead;
@@ -112,12 +112,14 @@ var doomClone;
             projectiles.forEach(bullet => {
                 if (bullet.getRange() > 0) {
                     if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+                        bullet.playExplosionAnimation();
                         enemy.deleteCertainBullet(bullet);
                         this.playPlayerAttackedSound();
                         this.setHealth(-bullet.getDamage());
                     }
                 }
                 else {
+                    bullet.playExplosionAnimation();
                     enemy.deleteCertainBullet(bullet);
                 }
             });

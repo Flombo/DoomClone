@@ -21,7 +21,6 @@ namespace doomClone {
         private attackSound : f.Audio;
         private dyingSound : f.Audio;
         private attackedSound : f.Audio;
-        private aggroRadiusTimer : f.Timer;
         private checkWallCollisionForEnemyEvent : CustomEvent;
         private currentState : string;
         private attackTimer : f.Timer;
@@ -49,7 +48,9 @@ namespace doomClone {
             let index : number = this.bullets.indexOf(bullet);
             this.bullets.splice(index, 1);
             bullet.removeEventListener();
-            this.getParent().removeChild(bullet);
+            new f.Timer(f.Time.game, 500, 1, () => {
+                this.getParent().removeChild(bullet);
+            });
         }
 
         private async initSounds() : Promise<void> {
@@ -66,9 +67,7 @@ namespace doomClone {
             this.initSprites();
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
-            this.aggroRadiusTimer = new f.Timer(f.Time.game, 100, 0, () => {
-                this.checkPlayerDistanceToAggroRadius();
-            });
+            f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkPlayerPositionRelativeToRadius);
         }
 
         private initSprites() : void {
@@ -80,7 +79,7 @@ namespace doomClone {
 
         private initDeathSprites() : void {
             let img : HTMLImageElement = <HTMLImageElement>document.getElementById("cacodemonDeath");
-            let spriteSheetAnimation : fAid.SpriteSheetAnimation = this.loadSprites(
+            let spriteSheetAnimation : fAid.SpriteSheetAnimation = doomClone.Enemy.loadSprites(
                 img,
                 "cacodemonDeath",
                 103.5,
@@ -89,13 +88,13 @@ namespace doomClone {
             );
             this.deathSprites = new fAid.NodeSprite('deathSprites');
             this.deathSprites.setAnimation(spriteSheetAnimation);
-            this.deathSprites.framerate = 1;
+            this.deathSprites.framerate = 6;
             this.deathSprites.setFrameDirection(1);
         }
 
         private initShootSprites() : void {
             let img : HTMLImageElement = <HTMLImageElement>document.getElementById("cacodemonShoot");
-            let spriteSheetAnimation : fAid.SpriteSheetAnimation = this.loadSprites(
+            let spriteSheetAnimation : fAid.SpriteSheetAnimation = doomClone.Enemy.loadSprites(
                 img,
                 "cacodemonShoot",
                 65.5,
@@ -104,13 +103,13 @@ namespace doomClone {
             );
             this.shootSprites = new fAid.NodeSprite('cacodemonShoot');
             this.shootSprites.setAnimation(spriteSheetAnimation);
-            this.shootSprites.framerate = 5;
+            this.shootSprites.framerate = 4;
             this.shootSprites.setFrameDirection(1);
         }
 
         private initHitSprites() : void {
             let img : HTMLImageElement = <HTMLImageElement>document.getElementById("cacodemonHit");
-            let spriteSheetAnimation : fAid.SpriteSheetAnimation = this.loadSprites(
+            let spriteSheetAnimation : fAid.SpriteSheetAnimation = doomClone.Enemy.loadSprites(
                 img,
                 "cacodemonHit",
                 63,
@@ -119,13 +118,13 @@ namespace doomClone {
             );
             this.hitSprites = new fAid.NodeSprite('cacodemonHit');
             this.hitSprites.setAnimation(spriteSheetAnimation);
-            this.hitSprites.framerate = 1;
+            this.hitSprites.framerate = 2;
             this.hitSprites.setFrameDirection(1);
         }
 
         private initIdleSprites() : void {
             let img : HTMLImageElement = <HTMLImageElement>document.getElementById("cacodemonIdle");
-            let spriteSheetAnimation : fAid.SpriteSheetAnimation = this.loadSprites(
+            let spriteSheetAnimation : fAid.SpriteSheetAnimation = doomClone.Enemy.loadSprites(
                 img,
                 "cacodemonIdle",
                 99,
@@ -134,12 +133,12 @@ namespace doomClone {
             );
             this.idleSprites = new fAid.NodeSprite('cacodemonIdle');
             this.idleSprites.setAnimation(spriteSheetAnimation);
-            this.idleSprites.framerate = 1;
+            this.idleSprites.framerate = 5;
             this.idleSprites.setFrameDirection(1);
             this.appendChild(this.idleSprites);
         }
 
-        private loadSprites(
+        private static loadSprites(
             img : HTMLImageElement,
             spriteName : string,
             width : number,
@@ -171,10 +170,15 @@ namespace doomClone {
                     this.flee();
                     break;
                 case 'idle':
-                    this.addAndRemoveSprites(this.idleSprites);
-                    this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
+                    this.idle();
                     break;
             }
+        }
+
+        private idle() : void {
+            this.addAndRemoveSprites(this.idleSprites);
+            this.idleSprites.setFrameDirection(1);
+            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
         }
 
         private avoid() : void {
@@ -187,10 +191,6 @@ namespace doomClone {
         }
 
         private hunt() : void {
-            // if(this.getChildrenByName("cacodemonShoot") !== null){
-            //     this.addAndRemoveSprites(this.idleSprites, this.shootSprites);
-            // }
-            this.checkAttackDistance();
             this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
             this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameGame);
             this.idleSprites.showFrame(0);
@@ -205,8 +205,8 @@ namespace doomClone {
         }
 
         private attack() : void {
-            if(this.attackTimer === null) {
-                this.attackTimer = new f.Timer(f.Time.game, 700, 1, () => {
+            if(!this.player.getIsDead() && this.attackTimer === null) {
+                this.attackTimer = new f.Timer(f.Time.game, 500, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
                     this.componentAudio.play(true);
@@ -249,27 +249,17 @@ namespace doomClone {
         }
 
         private die() : void {
-            this.addAndRemoveSprites(this.deathSprites);
-            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
+            this.mtxLocal.translateY(-0.25);
             this.removeEventListener("shotCollision", this.checkShotCollision);
-            this.aggroRadiusTimer.clear();
-            this.bullets.forEach(bullet => {
-                this.deleteCertainBullet(bullet);
+            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkPlayerPositionRelativeToRadius);
+            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
+            this.addAndRemoveSprites(this.deathSprites);
+            new f.Timer(f.Time.game, 1000, 1, () => {
+                this.bullets.forEach(bullet => {
+                    this.deleteCertainBullet(bullet);
+                });
+                this.getParent().removeChild(this);
             });
-            this.getParent().removeChild(this);
-        }
-
-        private checkPlayerDistanceToAggroRadius = () => {
-            this.checkWallCollision();
-            let distance = this.calculateDistance(this.player);
-            if(distance <= this.aggroRadius) {
-                this.currentState = 'hunt';
-            } else {
-                if(this.currentState !== 'avoid'){
-                    this.idleSprites.setFrameDirection(1);
-                    this.currentState = 'idle';
-                }
-            }
         }
 
         private checkShotCollision = () => {
@@ -298,16 +288,22 @@ namespace doomClone {
             this.getParent().broadcastEvent(this.checkWallCollisionForEnemyEvent);
         }
 
-        private checkAttackDistance = () => {
-            let distance = this.calculateDistance(this.player);
-            if(this.currentState !== 'flight' && distance <= this.attackRadius){
-                if(distance > this.flightRadius) {
+        private checkPlayerPositionRelativeToRadius = () => {
+            this.checkWallCollision();
+            if(this.currentState !== 'avoid') {
+                let distance : number = this.calculateDistance(this.player);
+                if(distance <= this.aggroRadius && distance > this.attackRadius){
+                    this.currentState = 'hunt';
+                } else if (distance <= this.attackRadius && distance > this.flightRadius) {
                     this.currentState = 'attack';
-                } else {
+                } else if (distance <= this.flightRadius) {
                     this.currentState = 'flight';
+                } else {
+                    this.currentState = 'idle';
                 }
             }
         }
+
     }
 
 }

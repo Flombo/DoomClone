@@ -7,33 +7,34 @@ var doomClone;
         constructor(startMatrix) {
             super("Ammo");
             this.speed = 50 / 1000;
-            //
-            // public playExplosionAnimation(startMatrix : f.Matrix4x4) : void {
-            //     let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
-            //     coat.texture = new ƒ.TextureImage();
-            //     coat.texture.image = <HTMLImageElement>document.getElementById("enemyProjectileExplosion");
-            //     let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectileExplosion", coat);
-            //     let startRect : f.Rectangle = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
-            //     spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0,0), 64, f.ORIGIN2D.CENTER);
-            //     this.projectileExplosionSprite = new fAid.NodeSprite('enemyProjectileExplosion');
-            //     this.projectileExplosionSprite.setAnimation(spriteSheetAnimation);
-            //     this.projectileExplosionSprite.framerate = 1;
-            //     this.projectileExplosionSprite.setFrameDirection(1);
-            //     this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(startMatrix.translation)));
-            //     this.appendChild(this.projectileExplosionSprite);
-            //     this.mtxLocal.translateZ(-0.15);
-            //     this.mtxLocal.rotation = startMatrix.rotation;
-            // }
             this.update = () => {
                 let distanceToTravel = this.speed * f.Loop.timeFrameGame;
                 this.mtxLocal.translateZ(distanceToTravel);
                 this.getParent().broadcastEvent(this.shotCollisionEvent);
                 this.range--;
             };
-            this.range = 30;
+            this.range = 10;
             this.damage = 5;
             this.shotCollisionEvent = new CustomEvent("enemyShotCollision");
             this.initBullet(startMatrix);
+            this.initExplosionSprite();
+            this.initSound();
+        }
+        async initSound() {
+            let explosionSound = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
+            this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
+        }
+        initExplosionSprite() {
+            let coat = new ƒ.CoatTextured();
+            coat.texture = new ƒ.TextureImage();
+            coat.texture.image = document.getElementById("enemyProjectileExplosion");
+            let spriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectileExplosion", coat);
+            let startRect = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
+            spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0, 0), 64, f.ORIGIN2D.CENTER);
+            this.projectileExplosionSprite = new fAid.NodeSprite('enemyProjectileExplosion');
+            this.projectileExplosionSprite.setAnimation(spriteSheetAnimation);
+            this.projectileExplosionSprite.framerate = 5;
+            this.projectileExplosionSprite.setFrameDirection(1);
         }
         initBullet(startMatrix) {
             let coat = new ƒ.CoatTextured();
@@ -51,6 +52,11 @@ var doomClone;
             this.mtxLocal.translateZ(-0.15);
             this.mtxLocal.rotation = startMatrix.rotation;
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+        }
+        playExplosionAnimation() {
+            this.componentAudioExplosion.play(true);
+            this.removeChild(this.projectileSprite);
+            this.appendChild(this.projectileExplosionSprite);
         }
         getRange() {
             return this.range;

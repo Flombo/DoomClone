@@ -11,13 +11,34 @@ namespace doomClone {
         private projectileSprite : fAid.NodeSprite;
         private projectileExplosionSprite : fAid.NodeSprite;
         private readonly shotCollisionEvent : CustomEvent;
+        private componentAudioExplosion : f.ComponentAudio;
 
         constructor(startMatrix : f.Matrix4x4) {
             super("Ammo");
-            this.range = 30;
+            this.range = 10;
             this.damage = 5;
             this.shotCollisionEvent = new CustomEvent<any>("enemyShotCollision")
             this.initBullet(startMatrix);
+            this.initExplosionSprite();
+            this.initSound();
+        }
+
+        private async initSound() : Promise<void> {
+            let explosionSound: f.Audio = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
+            this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
+        }
+
+        private initExplosionSprite() : void {
+            let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
+            coat.texture = new ƒ.TextureImage();
+            coat.texture.image = <HTMLImageElement>document.getElementById("enemyProjectileExplosion");
+            let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectileExplosion", coat);
+            let startRect : f.Rectangle = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
+            spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0,0), 64, f.ORIGIN2D.CENTER);
+            this.projectileExplosionSprite = new fAid.NodeSprite('enemyProjectileExplosion');
+            this.projectileExplosionSprite.setAnimation(spriteSheetAnimation);
+            this.projectileExplosionSprite.framerate = 5;
+            this.projectileExplosionSprite.setFrameDirection(1);
         }
 
         private initBullet(startMatrix : f.Matrix4x4) : void {
@@ -37,23 +58,12 @@ namespace doomClone {
             this.mtxLocal.rotation = startMatrix.rotation;
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.update);
         }
-        //
-        // public playExplosionAnimation(startMatrix : f.Matrix4x4) : void {
-        //     let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
-        //     coat.texture = new ƒ.TextureImage();
-        //     coat.texture.image = <HTMLImageElement>document.getElementById("enemyProjectileExplosion");
-        //     let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectileExplosion", coat);
-        //     let startRect : f.Rectangle = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
-        //     spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0,0), 64, f.ORIGIN2D.CENTER);
-        //     this.projectileExplosionSprite = new fAid.NodeSprite('enemyProjectileExplosion');
-        //     this.projectileExplosionSprite.setAnimation(spriteSheetAnimation);
-        //     this.projectileExplosionSprite.framerate = 1;
-        //     this.projectileExplosionSprite.setFrameDirection(1);
-        //     this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(startMatrix.translation)));
-        //     this.appendChild(this.projectileExplosionSprite);
-        //     this.mtxLocal.translateZ(-0.15);
-        //     this.mtxLocal.rotation = startMatrix.rotation;
-        // }
+
+        public playExplosionAnimation() : void {
+            this.componentAudioExplosion.play(true);
+            this.removeChild(this.projectileSprite);
+            this.appendChild(this.projectileExplosionSprite);
+        }
 
         private update = () =>  {
             let distanceToTravel: number = this.speed * f.Loop.timeFrameGame;

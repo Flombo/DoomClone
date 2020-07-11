@@ -14,18 +14,18 @@ var doomClone;
             this.init(x, y);
         }
         init(x, y) {
-            let wallMeshComp = new f.ComponentMesh(new f.MeshCube());
-            wallMeshComp.pivot.scaleZ(3);
-            let wallTextureIMG = new f.TextureImage();
-            wallTextureIMG.image = this.img;
-            let wallTextureCoat = new f.CoatTextured();
-            wallTextureCoat.texture = wallTextureIMG;
-            let wallMaterial = new f.Material("Wall", f.ShaderTexture, wallTextureCoat);
-            let wallComponentMat = new f.ComponentMaterial(wallMaterial);
-            let wallComponentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
-            this.addComponent(wallComponentTransform);
-            this.addComponent(wallMeshComp);
-            this.addComponent(wallComponentMat);
+            let componentMesh = new f.ComponentMesh(new f.MeshCube());
+            componentMesh.pivot.scaleZ(3);
+            let textureImage = new f.TextureImage();
+            textureImage.image = this.img;
+            let coatTextured = new f.CoatTextured();
+            coatTextured.texture = textureImage;
+            let material = new f.Material("ObstacleMaterial", f.ShaderTexture, coatTextured);
+            let componentMaterial = new f.ComponentMaterial(material);
+            let componentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
+            this.addComponent(componentTransform);
+            this.addComponent(componentMesh);
+            this.addComponent(componentMaterial);
             this.addEventListener("shotCollision", () => { this.checkShotCollision(); }, true);
             this.addEventListener("enemyShotCollision", () => { this.checkEnemyShotCollision(); }, true);
             this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision(); }, true);
@@ -48,11 +48,12 @@ var doomClone;
             projectiles.forEach(bullet => {
                 if (bullet.getRange() > 0) {
                     if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
-                        // bullet.playExplosionAnimation(this.enemy.mtxLocal);
+                        bullet.playExplosionAnimation();
                         this.enemy.deleteCertainBullet(bullet);
                     }
                 }
                 else {
+                    bullet.playExplosionAnimation();
                     this.enemy.deleteCertainBullet(bullet);
                 }
             });

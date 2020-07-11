@@ -20,19 +20,19 @@ namespace doomClone {
         }
 
         private init(x : number, y : number) : void {
-            let wallMeshComp: f.ComponentMesh = new f.ComponentMesh(new f.MeshCube());
-            wallMeshComp.pivot.scaleZ(3);
-            let wallTextureIMG: f.TextureImage = new f.TextureImage();
-            wallTextureIMG.image = this.img;
-            let wallTextureCoat: f.CoatTextured = new f.CoatTextured();
-            wallTextureCoat.texture = wallTextureIMG;
-            let wallMaterial: f.Material = new f.Material("Wall", f.ShaderTexture, wallTextureCoat);
-            let wallComponentMat: f.ComponentMaterial = new f.ComponentMaterial(wallMaterial);
-            let wallComponentTransform: f.ComponentTransform = new f.ComponentTransform(
+            let componentMesh: f.ComponentMesh = new f.ComponentMesh(new f.MeshCube());
+            componentMesh.pivot.scaleZ(3);
+            let textureImage: f.TextureImage = new f.TextureImage();
+            textureImage.image = this.img;
+            let coatTextured: f.CoatTextured = new f.CoatTextured();
+            coatTextured.texture = textureImage;
+            let material: f.Material = new f.Material("ObstacleMaterial", f.ShaderTexture, coatTextured);
+            let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(material);
+            let componentTransform: f.ComponentTransform = new f.ComponentTransform(
                 f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)))
-            this.addComponent(wallComponentTransform);
-            this.addComponent(wallMeshComp);
-            this.addComponent(wallComponentMat);
+            this.addComponent(componentTransform);
+            this.addComponent(componentMesh);
+            this.addComponent(componentMaterial);
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
             this.addEventListener("enemyShotCollision", () => { this.checkEnemyShotCollision() }, true);
             this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision() }, true);
@@ -56,10 +56,11 @@ namespace doomClone {
             projectiles.forEach(bullet => {
                 if(bullet.getRange() > 0) {
                     if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
-                        // bullet.playExplosionAnimation(this.enemy.mtxLocal);
+                        bullet.playExplosionAnimation();
                         this.enemy.deleteCertainBullet(bullet);
                     }
                 } else {
+                    bullet.playExplosionAnimation();
                     this.enemy.deleteCertainBullet(bullet);
                 }
             });
