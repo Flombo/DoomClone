@@ -5,14 +5,14 @@ namespace doomClone {
 
     export class Enemy extends f.Node{
 
-        private aggroRadius : number = 20;
-        private attackRadius : number = 15;
-        private flightRadius : number = 10;
-        private shotCollisionRadius : number = 1;
+        private aggroRadius : number = 18;
+        private attackRadius : number = 12;
+        private flightRadius : number = 8;
+        private shotCollisionRadius : number = 1.5;
         private speed : number = 5 / 1000;
-        private player : Player;
+        private readonly player : Player;
         private health : number = 20;
-        private bullets : EnemyBullet[];
+        private readonly bullets : EnemyBullet[];
         private componentAudio : f.ComponentAudio;
         private idleSprites : fAid.NodeSprite;
         private hitSprites : fAid.NodeSprite;
@@ -21,7 +21,7 @@ namespace doomClone {
         private attackSound : f.Audio;
         private dyingSound : f.Audio;
         private attackedSound : f.Audio;
-        private checkWallCollisionForEnemyEvent : CustomEvent;
+        private readonly checkWallCollisionForEnemyEvent : CustomEvent;
         private currentState : string;
         private attackTimer : f.Timer;
 
@@ -32,8 +32,8 @@ namespace doomClone {
             this.currentState = 'idle';
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent<any>("checkWallCollisionForEnemy");
-            this.initEnemy(x,y);
             this.initSounds();
+            this.initEnemy(x,y);
         }
 
         public setCurrentState(state : string) : void {
@@ -49,7 +49,9 @@ namespace doomClone {
             this.bullets.splice(index, 1);
             bullet.removeEventListener();
             new f.Timer(f.Time.game, 500, 1, () => {
-                this.getParent().removeChild(bullet);
+                if(this.getParent() !== null) {
+                    this.getParent().removeChild(bullet);
+                }
             });
         }
 
@@ -60,7 +62,7 @@ namespace doomClone {
             this.componentAudio = new f.ComponentAudio(this.attackedSound);
         }
 
-        private initEnemy(x : number, y : number) : void {
+        public initEnemy(x : number, y : number) : void {
             let enemyComponentTransform: f.ComponentTransform = new f.ComponentTransform(
                 f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
             this.addComponent(enemyComponentTransform);
@@ -133,7 +135,7 @@ namespace doomClone {
             );
             this.idleSprites = new fAid.NodeSprite('cacodemonIdle');
             this.idleSprites.setAnimation(spriteSheetAnimation);
-            this.idleSprites.framerate = 5;
+            this.idleSprites.framerate = 1;
             this.idleSprites.setFrameDirection(1);
             this.appendChild(this.idleSprites);
         }
@@ -155,7 +157,6 @@ namespace doomClone {
         }
 
         private checkCurrentState = () => {
-            console.log(this.currentState);
             switch (this.currentState) {
                 case 'avoid':
                     this.avoid();
@@ -255,10 +256,12 @@ namespace doomClone {
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
             this.addAndRemoveSprites(this.deathSprites);
             new f.Timer(f.Time.game, 1000, 1, () => {
-                this.bullets.forEach(bullet => {
-                    this.deleteCertainBullet(bullet);
-                });
-                this.getParent().removeChild(this);
+                if(this.getParent() !== null) {
+                    this.bullets.forEach(bullet => {
+                        this.deleteCertainBullet(bullet);
+                    });
+                    this.getParent().removeChild(this);
+                }
             });
         }
 
@@ -290,17 +293,15 @@ namespace doomClone {
 
         private checkPlayerPositionRelativeToRadius = () => {
             this.checkWallCollision();
-            if(this.currentState !== 'avoid') {
-                let distance : number = this.calculateDistance(this.player);
-                if(distance <= this.aggroRadius && distance > this.attackRadius){
-                    this.currentState = 'hunt';
-                } else if (distance <= this.attackRadius && distance > this.flightRadius) {
-                    this.currentState = 'attack';
-                } else if (distance <= this.flightRadius) {
-                    this.currentState = 'flight';
-                } else {
-                    this.currentState = 'idle';
-                }
+            let distance : number = this.calculateDistance(this.player);
+            if(distance <= this.aggroRadius && distance > this.attackRadius){
+                this.currentState = 'hunt';
+            } else if (distance <= this.attackRadius && distance > this.flightRadius) {
+                this.currentState = 'attack';
+            } else if (distance <= this.flightRadius) {
+                this.currentState = 'flight';
+            } else {
+                this.currentState = 'idle';
             }
         }
 

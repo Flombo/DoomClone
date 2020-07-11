@@ -47,7 +47,6 @@ var doomClone;
             return Math.sqrt(Math.pow(healthTranslationCopy.x, 2) + Math.pow(healthTranslationCopy.y, 2));
         }
         removeSelf() {
-            console.log("removeSelf", this.name);
             this.removeEventListener("playerCollision", this.checkPlayerCollision);
             f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.animateRotation);
             if (this.getParent() !== null) {

@@ -7,7 +7,7 @@ var doomClone;
     (function (speedTypes) {
         speedTypes[speedTypes["WALK"] = 0.01] = "WALK";
         speedTypes[speedTypes["ROTATION"] = 0.05] = "ROTATION";
-        speedTypes[speedTypes["SPRINT"] = 0.04] = "SPRINT";
+        speedTypes[speedTypes["SPRINT"] = 0.02] = "SPRINT";
     })(speedTypes || (speedTypes = {}));
     class Player extends f.Node {
         constructor() {
@@ -49,6 +49,7 @@ var doomClone;
         setHealth(health) {
             if (this.health + health > 0) {
                 if (health > 0) {
+                    this.health += health;
                     this.componentAudio.audio = this.pickUpSound;
                     this.componentAudio.play(true);
                 }
@@ -107,22 +108,29 @@ var doomClone;
             this.addEventListener("enemyShotCollision", () => { this.checkEnemyBulletCollision(); }, true);
         }
         checkEnemyBulletCollision() {
-            let enemy = this.getParent().getChildrenByName("Enemy")[0];
-            let projectiles = enemy.getBullets();
-            projectiles.forEach(bullet => {
-                if (bullet.getRange() > 0) {
-                    if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
-                        bullet.playExplosionAnimation();
-                        enemy.deleteCertainBullet(bullet);
-                        this.playPlayerAttackedSound();
-                        this.setHealth(-bullet.getDamage());
-                    }
-                }
-                else {
-                    bullet.playExplosionAnimation();
-                    enemy.deleteCertainBullet(bullet);
-                }
-            });
+            let enemies = this.getParent().getChildrenByName("Enemy");
+            if (enemies[0] !== undefined) {
+                enemies.forEach(enemy => {
+                    let projectiles = enemy.getBullets();
+                    projectiles.forEach(bullet => {
+                        if (bullet.getRange() > 0) {
+                            this.becomeDamaged(bullet, enemy);
+                        }
+                        else {
+                            bullet.playExplosionAnimation();
+                            enemy.deleteCertainBullet(bullet);
+                        }
+                    });
+                });
+            }
+        }
+        becomeDamaged(bullet, enemy) {
+            if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+                bullet.playExplosionAnimation();
+                enemy.deleteCertainBullet(bullet);
+                this.playPlayerAttackedSound();
+                this.setHealth(-bullet.getDamage());
+            }
         }
         calculateDistance(node) {
             let wallTranslationCopy = this.mtxLocal.translation.copy;
@@ -192,15 +200,24 @@ var doomClone;
         checkCollision() {
             this.getParent().broadcastEvent(this.playerCollisionEvent);
         }
+        initKeyMap() {
+            this.keyMap.set(f.KEYBOARD_CODE.ARROW_UP, false);
+            this.keyMap.set(f.KEYBOARD_CODE.ARROW_DOWN, false);
+            this.keyMap.set(f.KEYBOARD_CODE.ARROW_RIGHT, false);
+            this.keyMap.set(f.KEYBOARD_CODE.ARROW_LEFT, false);
+            this.keyMap.set(f.KEYBOARD_CODE.SHIFT_LEFT, false);
+            this.keyMap.set(f.KEYBOARD_CODE.CTRL_LEFT, false);
+        }
         //inits key-handling for movement
         initKeyHandlers() {
+            this.initKeyMap();
             window.addEventListener("keydown", (event) => {
                 this.keyMap.set(event.code, true);
                 this.checkUserInput();
             });
             window.addEventListener("keyup", (event) => {
-                this.keyMap.delete(event.code);
                 this.pistolSprites.setFrameDirection(0);
+                this.keyMap.set(event.code, false);
                 if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
                     this.walkSpeed = speedTypes.WALK;
                     if (this.stamina < 100) {

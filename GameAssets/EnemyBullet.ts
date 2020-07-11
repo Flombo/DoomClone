@@ -16,7 +16,7 @@ namespace doomClone {
         constructor(startMatrix : f.Matrix4x4) {
             super("Ammo");
             this.range = 10;
-            this.damage = 5;
+            this.damage = 2;
             this.shotCollisionEvent = new CustomEvent<any>("enemyShotCollision")
             this.initBullet(startMatrix);
             this.initExplosionSprite();
@@ -44,7 +44,7 @@ namespace doomClone {
         private initBullet(startMatrix : f.Matrix4x4) : void {
             let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
             coat.texture = new ƒ.TextureImage();
-            coat.texture.image = <HTMLImageElement>document.getElementById("enemyProjectile");
+            coat.texture.image = <HTMLImageElement>document.getElementById("projectile");
             let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectile", coat);
             let startRect : f.Rectangle = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
             spriteSheetAnimation.generateByGrid(startRect, 2, new f.Vector2(0,0), 64, f.ORIGIN2D.CENTER);

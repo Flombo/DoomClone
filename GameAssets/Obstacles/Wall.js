@@ -2,22 +2,25 @@
 var doomClone;
 (function (doomClone) {
     class Wall extends doomClone.Obstacle {
-        constructor(player, enemy, x, y) {
-            super(player, enemy, x, y, "Wall", document.getElementById("wall"));
+        constructor(player, enemies, x, y) {
+            super(player, enemies, x, y, "Wall", document.getElementById("wall"));
             this.player = player;
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision(); }, true);
-            // this.initSound();
+            this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision(); }, true);
         }
-        //
-        // private async initSound(): Promise<void> {
-        //     let explosionSound: f.Audio = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
-        //     this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
-        // }
         checkPlayerCollision() {
             let distance = this.calculateDistance(this.player);
             if (distance <= this.playerCollisionRadius) {
                 this.player.setIsAllowedToMove(false);
             }
+        }
+        checkEnemyCollision() {
+            Array.from(this.enemies).forEach(enemy => {
+                let distance = this.calculateDistance(enemy);
+                if (distance <= this.enemyCollisionRadius) {
+                    enemy.setCurrentState('avoid');
+                }
+            });
         }
     }
     doomClone.Wall = Wall;

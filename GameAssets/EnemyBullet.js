@@ -14,7 +14,7 @@ var doomClone;
                 this.range--;
             };
             this.range = 10;
-            this.damage = 5;
+            this.damage = 2;
             this.shotCollisionEvent = new CustomEvent("enemyShotCollision");
             this.initBullet(startMatrix);
             this.initExplosionSprite();
@@ -39,7 +39,7 @@ var doomClone;
         initBullet(startMatrix) {
             let coat = new ƒ.CoatTextured();
             coat.texture = new ƒ.TextureImage();
-            coat.texture.image = document.getElementById("enemyProjectile");
+            coat.texture.image = document.getElementById("projectile");
             let spriteSheetAnimation = new fAid.SpriteSheetAnimation("enemyProjectile", coat);
             let startRect = new f.Rectangle(0, 0, 16, 23, f.ORIGIN2D.TOPLEFT);
             spriteSheetAnimation.generateByGrid(startRect, 2, new f.Vector2(0, 0), 64, f.ORIGIN2D.CENTER);

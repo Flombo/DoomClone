@@ -5,17 +5,17 @@ namespace doomClone {
     export class Obstacle extends f.Node {
 
         protected player : Player;
-        private enemy : Enemy;
-        protected playerCollisionRadius : number = 0.9;
-        private enemyCollisionRadius : number = 1.4;
-        private shotCollisionRadius : number = 0.9;
+        protected enemies : Enemy[];
+        protected playerCollisionRadius : number = 1;
+        protected enemyCollisionRadius : number = 1;
+        private shotCollisionRadius : number = 1;
         private img : HTMLImageElement;
 
-        constructor(player : Player, enemy : Enemy, x : number, y : number, name : string, img : HTMLImageElement) {
+        constructor(player : Player, enemies : Enemy[], x : number, y : number, name : string, img : HTMLImageElement) {
             super(name);
             this.player = player;
             this.img = img;
-            this.enemy = enemy;
+            this.enemies = enemies;
             this.init(x, y);
         }
 
@@ -35,7 +35,6 @@ namespace doomClone {
             this.addComponent(componentMaterial);
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
             this.addEventListener("enemyShotCollision", () => { this.checkEnemyShotCollision() }, true);
-            this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision() }, true);
         }
 
         private checkShotCollision() : void {
@@ -52,17 +51,19 @@ namespace doomClone {
         }
 
         private checkEnemyShotCollision() : void {
-            let projectiles : EnemyBullet[] = this.enemy.getBullets();
-            projectiles.forEach(bullet => {
-                if(bullet.getRange() > 0) {
-                    if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
+            Array.from(this.enemies).forEach(enemy =>  {
+                let projectiles : EnemyBullet[] = enemy.getBullets();
+                projectiles.forEach(bullet => {
+                    if(bullet.getRange() > 0) {
+                        if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
+                            bullet.playExplosionAnimation();
+                            enemy.deleteCertainBullet(bullet);
+                        }
+                    } else {
                         bullet.playExplosionAnimation();
-                        this.enemy.deleteCertainBullet(bullet);
+                        enemy.deleteCertainBullet(bullet);
                     }
-                } else {
-                    bullet.playExplosionAnimation();
-                    this.enemy.deleteCertainBullet(bullet);
-                }
+                });
             });
         }
 
@@ -71,15 +72,6 @@ namespace doomClone {
             let nodeTranslationCopy = node.mtxLocal.translation.copy;
             wallTranslationCopy.subtract(nodeTranslationCopy);
             return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
-        }
-
-        private checkEnemyCollision() : void {
-            let distance = this.calculateDistance(this.enemy);
-            if(distance <= this.enemyCollisionRadius){
-                this.enemy.setCurrentState('avoid');
-            } else {
-                this.enemy.setCurrentState('idle');
-            }
         }
 
     }

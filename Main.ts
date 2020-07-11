@@ -22,12 +22,18 @@ namespace doomClone {
 		let player : Player = new Player();
 		root.appendChild(player);
 
+		let enemies : Enemy[] = [];
+
 		let enemy : Enemy = new Enemy(player, 9, 20);
 		root.appendChild(enemy);
+		enemies.push(enemy);
 
+		let enemy1 : Enemy = new Enemy(player, -15, -25);
+		root.appendChild(enemy1);
+		enemies.push(enemy1);
 
-		let wall : Wall = new Wall(player, enemy,2, 4);
-		let wall1 : Wall = new Wall(player, enemy, 2, 2);
+		let wall : Wall = new Wall(player, enemies,2, 4);
+		let wall1 : Wall = new Wall(player, enemies, 2, 1);
 		root.appendChild(wall);
 		root.appendChild(wall1);
 
@@ -40,7 +46,7 @@ namespace doomClone {
 		let ammoKit : AmmoKit = new AmmoKit(player, 4, 4);
 		root.appendChild(ammoKit);
 
-		let door : Door = new Door(player, enemy,2, 3);
+		let door : Door = new Door(player, enemies,2, 2.5);
 		root.appendChild(door);
 
 		// let light : f.LightAmbient = new f.LightAmbient(new f.Color(1, 1, 0.5, 0.1));

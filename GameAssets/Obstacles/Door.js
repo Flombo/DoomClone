@@ -3,13 +3,15 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     class Door extends doomClone.Obstacle {
-        constructor(player, enemy, x, y) {
-            super(player, enemy, x, y, "Door", document.getElementById("door"));
+        constructor(player, enemies, x, y) {
+            super(player, enemies, x, y, "Door", document.getElementById("door"));
             this.playerInteractionRadius = 2.5;
             this.isClosed = true;
+            this.mtxLocal.scaleY(2);
             this.initDoorSounds();
             this.addEventListener("playerInteraction", () => { this.checkPlayerInteraction(); }, true);
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision(); }, true);
+            this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision(); }, true);
         }
         async initDoorSounds() {
             let doorClosingSound = await f.Audio.load("../../DoomClone/sounds/doorClosed.wav");
@@ -43,6 +45,16 @@ var doomClone;
                 if (distance <= this.playerCollisionRadius) {
                     this.player.setIsAllowedToMove(false);
                 }
+            }
+        }
+        checkEnemyCollision() {
+            if (this.isClosed) {
+                Array.from(this.enemies).forEach(enemy => {
+                    let distance = this.calculateDistance(enemy);
+                    if (distance <= this.enemyCollisionRadius) {
+                        enemy.setCurrentState('avoid');
+                    }
+                });
             }
         }
     }

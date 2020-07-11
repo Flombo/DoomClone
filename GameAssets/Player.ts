@@ -6,7 +6,7 @@ namespace doomClone {
 	enum speedTypes {
 		'WALK' = 10 / 1000,
 		'ROTATION' = 50 / 1000,
-		'SPRINT' = 40 / 1000
+		'SPRINT' = 20 / 1000
 	}
 
 	export class Player extends f.Node{
@@ -82,6 +82,7 @@ namespace doomClone {
 		public setHealth(health : number) : void {
 			if(this.health + health > 0) {
 				if (health > 0) {
+					this.health += health;
 					this.componentAudio.audio = this.pickUpSound;
 					this.componentAudio.play(true);
 				} else {
@@ -146,21 +147,29 @@ namespace doomClone {
 		}
 
 		private checkEnemyBulletCollision() : void {
-			let enemy = <Enemy>this.getParent().getChildrenByName("Enemy")[0];
-			let projectiles: EnemyBullet[] = enemy.getBullets();
-			projectiles.forEach(bullet => {
-				if (bullet.getRange() > 0) {
-					if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
-						bullet.playExplosionAnimation();
-						enemy.deleteCertainBullet(bullet);
-						this.playPlayerAttackedSound();
-						this.setHealth(-bullet.getDamage());
-					}
-				} else {
-					bullet.playExplosionAnimation();
-					enemy.deleteCertainBullet(bullet);
-				}
-			});
+			let enemies : Enemy[] = <Enemy[]>this.getParent().getChildrenByName("Enemy");
+			if(enemies[0] !== undefined) {
+				enemies.forEach(enemy => {
+					let projectiles: EnemyBullet[] = enemy.getBullets();
+					projectiles.forEach(bullet => {
+						if (bullet.getRange() > 0) {
+							this.becomeDamaged(bullet, enemy);
+						} else {
+							bullet.playExplosionAnimation();
+							enemy.deleteCertainBullet(bullet);
+						}
+					});
+				});
+			}
+		}
+
+		private becomeDamaged(bullet : EnemyBullet, enemy : Enemy) : void {
+			if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+				bullet.playExplosionAnimation();
+				enemy.deleteCertainBullet(bullet);
+				this.playPlayerAttackedSound();
+				this.setHealth(-bullet.getDamage());
+			}
 		}
 
 		private calculateDistance(node : f.Node) : number {
@@ -243,20 +252,30 @@ namespace doomClone {
 			this.getParent().broadcastEvent(this.playerCollisionEvent);
 		}
 
+		private initKeyMap() : void {
+			this.keyMap.set(f.KEYBOARD_CODE.ARROW_UP, false);
+			this.keyMap.set(f.KEYBOARD_CODE.ARROW_DOWN, false);
+			this.keyMap.set(f.KEYBOARD_CODE.ARROW_RIGHT, false);
+			this.keyMap.set(f.KEYBOARD_CODE.ARROW_LEFT, false);
+			this.keyMap.set(f.KEYBOARD_CODE.SHIFT_LEFT, false);
+			this.keyMap.set(f.KEYBOARD_CODE.CTRL_LEFT, false);
+		}
+
 		//inits key-handling for movement
 		private initKeyHandlers() : void {
+			this.initKeyMap();
 			window.addEventListener("keydown", (event : KeyboardEvent) => {
 				this.keyMap.set(event.code, true);
 				this.checkUserInput();
 			});
 			window.addEventListener("keyup", (event : KeyboardEvent) => {
-				this.keyMap.delete(event.code);
 				this.pistolSprites.setFrameDirection(0);
+				this.keyMap.set(event.code, false);
 				if(event.code === f.KEYBOARD_CODE.SHIFT_LEFT){
 					this.walkSpeed = speedTypes.WALK;
 					if(this.stamina < 100) {
 						new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
-							this.relax()
+							this.relax();
 						});
 					}
 				}

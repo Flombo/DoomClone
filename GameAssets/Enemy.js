@@ -6,14 +6,13 @@ var doomClone;
     class Enemy extends f.Node {
         constructor(player, x, y) {
             super("Enemy");
-            this.aggroRadius = 20;
-            this.attackRadius = 15;
-            this.flightRadius = 10;
-            this.shotCollisionRadius = 1;
+            this.aggroRadius = 18;
+            this.attackRadius = 12;
+            this.flightRadius = 8;
+            this.shotCollisionRadius = 1.5;
             this.speed = 5 / 1000;
             this.health = 20;
             this.checkCurrentState = () => {
-                console.log(this.currentState);
                 switch (this.currentState) {
                     case 'avoid':
                         this.avoid();
@@ -52,20 +51,18 @@ var doomClone;
             };
             this.checkPlayerPositionRelativeToRadius = () => {
                 this.checkWallCollision();
-                if (this.currentState !== 'avoid') {
-                    let distance = this.calculateDistance(this.player);
-                    if (distance <= this.aggroRadius && distance > this.attackRadius) {
-                        this.currentState = 'hunt';
-                    }
-                    else if (distance <= this.attackRadius && distance > this.flightRadius) {
-                        this.currentState = 'attack';
-                    }
-                    else if (distance <= this.flightRadius) {
-                        this.currentState = 'flight';
-                    }
-                    else {
-                        this.currentState = 'idle';
-                    }
+                let distance = this.calculateDistance(this.player);
+                if (distance <= this.aggroRadius && distance > this.attackRadius) {
+                    this.currentState = 'hunt';
+                }
+                else if (distance <= this.attackRadius && distance > this.flightRadius) {
+                    this.currentState = 'attack';
+                }
+                else if (distance <= this.flightRadius) {
+                    this.currentState = 'flight';
+                }
+                else {
+                    this.currentState = 'idle';
                 }
             };
             this.player = player;
@@ -73,8 +70,8 @@ var doomClone;
             this.currentState = 'idle';
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent("checkWallCollisionForEnemy");
-            this.initEnemy(x, y);
             this.initSounds();
+            this.initEnemy(x, y);
         }
         setCurrentState(state) {
             this.currentState = state;
@@ -87,7 +84,9 @@ var doomClone;
             this.bullets.splice(index, 1);
             bullet.removeEventListener();
             new f.Timer(f.Time.game, 500, 1, () => {
-                this.getParent().removeChild(bullet);
+                if (this.getParent() !== null) {
+                    this.getParent().removeChild(bullet);
+                }
             });
         }
         async initSounds() {
@@ -139,7 +138,7 @@ var doomClone;
             let spriteSheetAnimation = doomClone.Enemy.loadSprites(img, "cacodemonIdle", 99, 68, 5);
             this.idleSprites = new fAid.NodeSprite('cacodemonIdle');
             this.idleSprites.setAnimation(spriteSheetAnimation);
-            this.idleSprites.framerate = 5;
+            this.idleSprites.framerate = 1;
             this.idleSprites.setFrameDirection(1);
             this.appendChild(this.idleSprites);
         }
@@ -227,10 +226,12 @@ var doomClone;
             f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.checkCurrentState);
             this.addAndRemoveSprites(this.deathSprites);
             new f.Timer(f.Time.game, 1000, 1, () => {
-                this.bullets.forEach(bullet => {
-                    this.deleteCertainBullet(bullet);
-                });
-                this.getParent().removeChild(this);
+                if (this.getParent() !== null) {
+                    this.bullets.forEach(bullet => {
+                        this.deleteCertainBullet(bullet);
+                    });
+                    this.getParent().removeChild(this);
+                }
             });
         }
         calculateDistance(node) {

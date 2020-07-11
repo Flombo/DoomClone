@@ -2,17 +2,12 @@ namespace doomClone {
 
     export class Wall extends Obstacle {
 
-        constructor(player: Player, enemy: Enemy, x: number, y: number) {
-            super(player, enemy, x, y, "Wall", <HTMLImageElement>document.getElementById("wall"));
+        constructor(player: Player, enemies : Enemy[], x: number, y: number) {
+            super(player, enemies, x, y, "Wall", <HTMLImageElement>document.getElementById("wall"));
             this.player = player;
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision() }, true);
-            // this.initSound();
+            this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision() }, true);
         }
-        //
-        // private async initSound(): Promise<void> {
-        //     let explosionSound: f.Audio = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
-        //     this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
-        // }
 
         private checkPlayerCollision() : void {
             let distance = this.calculateDistance(this.player);
@@ -20,6 +15,16 @@ namespace doomClone {
                 this.player.setIsAllowedToMove(false);
             }
         }
+
+        private checkEnemyCollision() : void {
+            Array.from(this.enemies).forEach(enemy => {
+                let distance = this.calculateDistance(enemy);
+                if(distance <= this.enemyCollisionRadius) {
+                    enemy.setCurrentState('avoid');
+                }
+            });
+        }
+
     }
 
 }

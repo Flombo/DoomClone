@@ -8,12 +8,14 @@ namespace doomClone {
         private playerInteractionRadius : number = 2.5;
         private componentAudioDoorClosingAndOpening : f.ComponentAudio;
 
-        constructor(player : Player, enemy : Enemy, x : number, y : number) {
-            super(player, enemy, x, y, "Door", <HTMLImageElement>document.getElementById("door"));
+        constructor(player : Player, enemies : Enemy[], x : number, y : number) {
+            super(player, enemies, x, y, "Door", <HTMLImageElement>document.getElementById("door"));
             this.isClosed = true;
+            this.mtxLocal.scaleY(2);
             this.initDoorSounds();
             this.addEventListener("playerInteraction", () => { this.checkPlayerInteraction() }, true);
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision() }, true);
+            this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision() }, true);
         }
 
         private async initDoorSounds() : Promise<void> {
@@ -50,6 +52,17 @@ namespace doomClone {
                 if (distance <= this.playerCollisionRadius) {
                     this.player.setIsAllowedToMove(false);
                 }
+            }
+        }
+
+        private checkEnemyCollision() : void {
+            if(this.isClosed) {
+                Array.from(this.enemies).forEach(enemy => {
+                    let distance = this.calculateDistance(enemy);
+                    if(distance <= this.enemyCollisionRadius) {
+                        enemy.setCurrentState('avoid');
+                    }
+                });
             }
         }
 

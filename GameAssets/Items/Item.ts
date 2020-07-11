@@ -57,7 +57,6 @@ namespace doomClone {
         }
 
         protected removeSelf() : void {
-            console.log("removeSelf", this.name)
             this.removeEventListener("playerCollision", this.checkPlayerCollision);
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.animateRotation);
             if(this.getParent() !== null){
