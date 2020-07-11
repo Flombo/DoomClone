@@ -8,7 +8,6 @@ var doomClone;
     function hndLoad(_event) {
         let canvas = document.getElementById("game");
         let portraitCanvas = document.getElementById("portraitCanvas");
-        f.RenderManager.initialize(true, true);
         let root = new f.Node("root");
         let groundNode = new doomClone.Ground();
         root.appendChild(groundNode);
@@ -16,8 +15,10 @@ var doomClone;
         root.appendChild(roofNode);
         let player = new doomClone.Player();
         root.appendChild(player);
-        let wall = new doomClone.Wall(player, 2, 4);
-        let wall1 = new doomClone.Wall(player, 2, 2);
+        let enemy = new doomClone.Enemy(player, 9, 20);
+        root.appendChild(enemy);
+        let wall = new doomClone.Wall(player, enemy, 2, 4);
+        let wall1 = new doomClone.Wall(player, enemy, 2, 2);
         root.appendChild(wall);
         root.appendChild(wall1);
         let healthKit = new doomClone.HealthKit(player, -8, 4);
@@ -26,10 +27,8 @@ var doomClone;
         root.appendChild(armorKit);
         let ammoKit = new doomClone.AmmoKit(player, 4, 4);
         root.appendChild(ammoKit);
-        let door = new doomClone.Door(player, 2, 3);
+        let door = new doomClone.Door(player, enemy, 2, 3);
         root.appendChild(door);
-        let enemy = new doomClone.Enemy(player, 9, 10);
-        root.appendChild(enemy);
         // let light : f.LightAmbient = new f.LightAmbient(new f.Color(1, 1, 0.5, 0.1));
         // let directionalLight : f.LightDirectional = new f.LightDirectional(f.Color.CSS('white'));
         // let directionalLightComp : f.ComponentLight = new f.ComponentLight(directionalLight);
@@ -49,12 +48,17 @@ var doomClone;
         f.AudioManager.default.listenTo(root);
         f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
         f.Loop.addEventListener("loopFrame", renderLoop);
-        f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
+        f.Loop.start(f.LOOP_MODE.TIME_GAME, 30);
         function renderLoop() {
             if (!gameMenuManager.getIsPaused()) {
-                f.AudioManager.default.update();
-                viewport.draw();
-                viewportPortrait.draw();
+                if (!player.getIsDead()) {
+                    f.AudioManager.default.update();
+                    viewportPortrait.draw();
+                    viewport.draw();
+                }
+                else {
+                    gameMenuManager.showDeadPrompt();
+                }
             }
         }
     }

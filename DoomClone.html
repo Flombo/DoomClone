@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Doom-Clone</title>
-    <script src="./FudgeCore/FudgeCore.js"></script>
-    <script src="./FudgeAid/FudgeAid.js"></script>
+    <script src="./Fudge/Core/Build/FudgeCore.js"></script>
+    <script src="./Fudge/Aid/Build/FudgeAid.js"></script>
     <script src="./GameAssets/Bullet.js"></script>
-    <script src="./GameAssets/Door.js"></script>
-    <script src="./GameAssets/HealthKit.js"></script>
-    <script src="./GameAssets/ArmorKit.js"></script>
-    <script src="./GameAssets/AmmoKit.js"></script>
+    <script src="./GameAssets/EnemyBullet.js"></script>
+    <script src="./GameAssets/Obstacles/Obstacle.js"></script>
+    <script src="GameAssets/Obstacles/Door.js"></script>
+    <script src="GameAssets/Items/Item.js"></script>
+    <script src="GameAssets/Items/HealthKit.js"></script>
+    <script src="GameAssets/Items/ArmorKit.js"></script>
+    <script src="GameAssets/Items/AmmoKit.js"></script>
     <script src="./GameAssets/Player.js"></script>
     <script src="./GameAssets/Enemy.js"></script>
-    <script src="./GameAssets/Wall.js"></script>
+    <script src="GameAssets/Obstacles/Wall.js"></script>
     <script src="./GameAssets/Ground.js"></script>
     <script src="./GameAssets/Roof.js"></script>
     <script src="./Menus/GameMenuManager.js"></script>
@@ -50,12 +53,20 @@
 </header>
 <canvas id="game"></canvas>
 <h1 id="pausePrompt">Paused</h1>
+<h1 id="deadPrompt">You died!</h1>
 <h1 id="startPrompt" class="visible">Press Escape to start</h1>
-<img id="portrait" src="./spritesheets/faceSprites.png">
-<img id="ground" src="./spritesheets/groundTexture.png">
-<img id="roof" src="./spritesheets/roofTexture.png">
-<img id="pistol" src="./spritesheets/pistol.png">
-<img id="wall" src="./spritesheets/wall.png">
-<img id="door" src="./spritesheets/door.png">
+<img id="portrait" src="spritesheets/Player/faceSprites.png">
+<img id="cacodemonIdle" src="spritesheets/Enemy/cacodemonIdle.png">
+<img id="cacodemonHit" src="spritesheets/Enemy/cacodemonHit.png">
+<img id="cacodemonShoot" src="spritesheets/Enemy/cacodemonShoot.png">
+<img id="cacodemonDeath" src="spritesheets/Enemy/cacodemonDeath.png">
+<img id="enemyProjectile" src="spritesheets/Enemy/EnemyProjectile.png">
+<img id="enemyProjectileExplosion" src="spritesheets/Enemy/EnemyProjectileExplosion.png">
+<img id="playerProjectileExplosion" src="spritesheets/Player/projectileExplosion.png">
+<img id="ground" src="spritesheets/Surfaces/groundTexture.png">
+<img id="roof" src="spritesheets/Surfaces/roofTexture.png">
+<img id="pistol" src="spritesheets/Player/pistol.png">
+<img id="wall" src="spritesheets/Obstacles/wall.png">
+<img id="door" src="spritesheets/Obstacles/door.png">
 </body>
 </html>

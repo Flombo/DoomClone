@@ -4,16 +4,18 @@ namespace doomClone {
 	import fAid = FudgeAid;
 
 	enum speedTypes {
-		'WALK' = 15 / 1000,
-		'ROTATION' = 150 / 1000,
+		'WALK' = 10 / 1000,
+		'ROTATION' = 50 / 1000,
 		'SPRINT' = 40 / 1000
 	}
 
 	export class Player extends f.Node{
 
+		private isDead : boolean;
 		private egoCamera : f.ComponentCamera;
 		private portraitCamera : f.ComponentCamera;
 		private portraitSprites : fAid.NodeSprite;
+		private pistolSprites : fAid.NodeSprite;
 		private health : number;
 		private ammo : number;
 		private armor : number;
@@ -29,10 +31,13 @@ namespace doomClone {
 		private readonly playerCollisionEvent : CustomEvent;
 		private readonly playerInteractionEvent : CustomEvent;
 		private isAllowedToMove : boolean;
-		private componentAudioShot : f.ComponentAudio;
-		private componentAudioEmptySound : f.ComponentAudio;
-		private componentAudioPickUpSound : f.ComponentAudio;
-		private componentAudioPlayerAttacked : f.ComponentAudio;
+		private componentAudio : f.ComponentAudio;
+		private magazineEmptySound : f.Audio;
+		private pickUpSound : f.Audio;
+		private playerAttackedSound : f.Audio;
+		private pistolSound : f.Audio;
+		private playerDyingSound : f.Audio;
+		private shotCollisionRadius : number = 0.9;
 
 		constructor() {
 			super("Player");
@@ -75,12 +80,26 @@ namespace doomClone {
 		}
 
 		public setHealth(health : number) : void {
-			this.health += health;
 			this.healthBar.value = this.health;
+			if(this.health + health > 0) {
+				if (health > 0) {
+					this.componentAudio.audio = this.pickUpSound;
+					this.componentAudio.play(true);
+				} else {
+					this.health += (health / this.armor);
+				}
+			} else {
+				this.setIsDeadTrue();
+			}
+		}
+
+		public getIsDead() : boolean {
+			return this.isDead;
 		}
 
 		public playPlayerAttackedSound() : void {
-			this.componentAudioPlayerAttacked.play(true);
+			this.componentAudio.audio = this.playerAttackedSound;
+			this.componentAudio.play(true);
 		}
 
 		public getHealth() : number {
@@ -90,75 +109,120 @@ namespace doomClone {
 		public setArmor(armor : number) : void {
 			this.armor += armor;
 			this.armorBar.innerText = String(this.armor) + "%";
-			this.componentAudioPickUpSound.play(true);
+			this.componentAudio.audio = this.pickUpSound;
+			this.componentAudio.play(true);
 		}
 
 		public setAmmo(ammo : number) : void {
 			this.ammo += ammo;
 			this.ammoBar.innerText = String(this.ammo);
-			this.componentAudioPickUpSound.play(true);
+			this.componentAudio.audio = this.pickUpSound;
+			this.componentAudio.play(true);
+		}
+
+		private setIsDeadTrue() : void {
+			this.componentAudio.audio = this.playerDyingSound;
+			this.componentAudio.play(true);
+			this.isDead = true;
 		}
 
 		//inits parameter, bars, audio and sprites
-		private async initPlayer() : Promise<void> {
+		private initPlayer() : void {
 			this.currentBullets = [];
 			this.health = 100;
 			this.ammo = 100;
 			this.armor = 100;
 			this.stamina = 100;
+			this.isDead = false;
 			this.healthBar = <HTMLProgressElement>document.getElementById("healthBar");
 			this.staminaBar = <HTMLProgressElement>document.getElementById("staminaBar");
 			this.ammoBar = <HTMLElement>document.getElementById("ammoPanel");
 			this.armorBar = <HTMLElement>document.getElementById("armorPanel");
-			this.loadPortraitSprites();
-			// this.loadSprites();
-			let shotSound : f.Audio = await f.Audio.load("../../DoomClone/sounds/pistol.wav");
-			let emptyAmmoSound : f.Audio = await f.Audio.load("../../DoomClone/sounds/wrong.mp3");
-			let pickUpSound : f.Audio = await f.Audio.load("../../DoomClone/sounds/reload.wav");
-			let playerDamagedSound : f.Audio = await f.Audio.load("../../DoomClone/sounds/playerShot.wav");
-			this.componentAudioShot = new f.ComponentAudio(shotSound);
-			this.componentAudioEmptySound = new f.ComponentAudio(emptyAmmoSound);
-			this.componentAudioPickUpSound = new f.ComponentAudio(pickUpSound);
-			this.componentAudioPlayerAttacked = new f.ComponentAudio(playerDamagedSound);
-			this.addComponent(new f.ComponentAudioListener());
-			this.addComponent(this.componentAudioShot);
-			this.addComponent(this.componentAudioPickUpSound);
-			this.addComponent(this.componentAudioEmptySound);
 			this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0,0,0))));
+			this.loadPortraitSprites();
+			this.loadSprites();
+			this.initSounds();
+			this.addEventListener("enemyShotCollision", () => { this.checkEnemyBulletCollision() }, true);
+		}
+
+		private checkEnemyBulletCollision() : void {
+			let enemy = <Enemy>this.getParent().getChildrenByName("Enemy")[0];
+			let projectiles: EnemyBullet[] = enemy.getBullets();
+			projectiles.forEach(bullet => {
+				if (bullet.getRange() > 0) {
+					if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+						enemy.deleteCertainBullet(bullet);
+						this.playPlayerAttackedSound();
+						this.setHealth(-bullet.getDamage());
+					}
+				} else {
+					enemy.deleteCertainBullet(bullet);
+				}
+			});
+		}
+
+		private calculateDistance(node : f.Node) : number {
+			let wallTranslationCopy = this.mtxLocal.translation.copy;
+			let nodeTranslationCopy = node.mtxLocal.translation.copy;
+			wallTranslationCopy.subtract(nodeTranslationCopy);
+			return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
+		}
+
+		private async initSounds() : Promise<void> {
+			this.pistolSound = await f.Audio.load("../../DoomClone/sounds/pistol.wav");
+			this.magazineEmptySound = await f.Audio.load("../../DoomClone/sounds/wrong.mp3");
+			this.pickUpSound = await f.Audio.load("../../DoomClone/sounds/reload.wav");
+			this.playerAttackedSound = await f.Audio.load("../../DoomClone/sounds/playerShot.wav");
+			this.playerDyingSound = await f.Audio.load("../../DoomClone/sounds/playerDeath.wav");
+			this.componentAudio = new f.ComponentAudio(this.pistolSound);
+			this.addComponent(new f.ComponentAudioListener());
+			this.addComponent(this.componentAudio);
 		}
 
 		//loads portraitsprites
 		private loadPortraitSprites() : void{
-			let portraitSpriteSheetIMG = <HTMLImageElement>document.getElementById("portrait");
-			let portraitSpriteSheet = fAid.createSpriteSheet("pistol", portraitSpriteSheetIMG);
-			let portraitSpriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", portraitSpriteSheet);
-			let startRect : f.Rectangle = new f.Rectangle(0, 0, 24, 30, f.ORIGIN2D.TOPLEFT);
-			portraitSpriteSheetAnimation.generateByGrid(startRect, 3, new f.Vector2(0,0), 72, f.ORIGIN2D.TOPLEFT);
+			let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
+			coat.texture = new ƒ.TextureImage();
+			coat.texture.image = <HTMLImageElement>document.getElementById("portrait");
+			let portraitSpriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("portrait", coat);
+			let startRect : f.Rectangle = new f.Rectangle(0, 0, 25, 30, f.ORIGIN2D.TOPLEFT);
+			portraitSpriteSheetAnimation.generateByGrid(startRect, 3, new f.Vector2(0,0), 72, f.ORIGIN2D.CENTER);
 			this.portraitSprites = new fAid.NodeSprite('portraitSprite');
 			this.portraitSprites.setAnimation(portraitSpriteSheetAnimation);
+			this.portraitSprites.framerate = 1;
 			this.portraitSprites.showFrame(1);
-			this.portraitSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0,0,3))));
+			this.portraitSprites.setFrameDirection(0);
 		}
 
 		private loadSprites() : void {
-			let pistolSpriteSheetIMG = <HTMLImageElement>document.getElementById("pistol");
-			let pistolSpriteSheet = fAid.createSpriteSheet("pistol", pistolSpriteSheetIMG);
-			let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", pistolSpriteSheet);
+			let coat: ƒ.CoatTextured = new ƒ.CoatTextured();
+			coat.texture = new ƒ.TextureImage();
+			coat.texture.image = <HTMLImageElement>document.getElementById("pistol");
+			let spriteSheetAnimation : fAid.SpriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", coat);
 			let startRect : f.Rectangle = new f.Rectangle(0, 0, 80, 122, f.ORIGIN2D.TOPLEFT);
 			spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0,0), 64, f.ORIGIN2D.CENTER);
-			let nodeSprite : fAid.NodeSprite = new fAid.NodeSprite('nodeSprite');
-			nodeSprite.setAnimation(spriteSheetAnimation);
-			this.appendChild(nodeSprite);
+			this.pistolSprites = new fAid.NodeSprite('pistolSprite');
+			this.pistolSprites.setAnimation(spriteSheetAnimation);
+			this.pistolSprites.framerate = 5;
+			this.pistolSprites.showFrame(1);
+			this.pistolSprites.setFrameDirection(0);
+			this.pistolSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(
+				this.mtxLocal.translation.x,
+				this.mtxLocal.translation.y + 1.8,
+				this.mtxLocal.translation.z - 0.25
+				)
+			)));
+			this.pistolSprites.mtxLocal.rotateX(90);
+			this.pistolSprites.mtxLocal.scale(f.Vector3.ONE(0.5));
+			this.pistolSprites.showFrame(0);
+			this.pistolSprites.setFrameDirection(0);
+			this.appendChild(this.pistolSprites);
 		}
 
 		//inits portraitCamera for face HUD
 		private initPortraitCamera() : void {
 			this.portraitCamera = new f.ComponentCamera();
-			this.portraitCamera.backgroundColor = f.Color.CSS('black');
-			// this.portraitCamera.pivot.rotateY(180);
-			// this.portraitCamera.pivot.translateZ(5);
-			// this.portraitCamera.pivot.translateX(-2)
-			// this.portraitCamera.pivot.lookAt(this.portraitSprites.mtxLocal.translation, f.Vector3.Z());
+			this.portraitCamera.pivot.translateZ(-1);
 		}
 
 		//inits egoCamera and rotate it to player pov
@@ -185,6 +249,7 @@ namespace doomClone {
 			});
 			window.addEventListener("keyup", (event : KeyboardEvent) => {
 				this.keyMap.delete(event.code);
+				this.pistolSprites.setFrameDirection(0);
 				if(event.code === f.KEYBOARD_CODE.SHIFT_LEFT){
 					this.walkSpeed = speedTypes.WALK;
 					if(this.stamina < 100) {
@@ -220,12 +285,14 @@ namespace doomClone {
 
 		private checkArrowRight() : void {
 			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_RIGHT)) {
+				this.portraitSprites.showFrame(2);
 				this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
 			}
 		}
 
 		private checkArrowLeft() : void {
 			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_LEFT)) {
+				this.portraitSprites.showFrame(0);
 				this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
 			}
 		}
@@ -244,6 +311,8 @@ namespace doomClone {
 					this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
 					this.isAllowedToMove = true;
 				}
+				this.portraitSprites.showFrame(1);
+				this.pistolSprites.setFrameDirection(1);
 			}
 		}
 
@@ -259,6 +328,7 @@ namespace doomClone {
 				if(this.isAllowedToMove) {
 					this.move(-this.walkSpeed * f.Loop.timeFrameGame);
 				}
+				this.pistolSprites.setFrameDirection(1);
 			}
 		}
 
@@ -302,10 +372,15 @@ namespace doomClone {
 				this.getParent().appendChild(bullet);
 				this.currentBullets.push(bullet);
 				this.setAmmo(-1);
-				this.componentAudioShot.play(true);
+				this.componentAudio.audio = this.pistolSound;
+				new f.Timer(f.Time.game, 100, 1, () => {
+					this.pistolSprites.setFrameDirection(1);
+				});
 			} else {
-				this.componentAudioEmptySound.play(true);
+				this.componentAudio.audio = this.magazineEmptySound;
 			}
+			this.componentAudio.play(true);
+			this.pistolSprites.setFrameDirection(0);
 		}
 
 		private reload() : void {

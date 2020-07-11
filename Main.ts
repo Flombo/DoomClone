@@ -1,6 +1,7 @@
 namespace doomClone {
 
 	import f = FudgeCore;
+	import fAid = FudgeAid;
 
 	window.addEventListener("load", (event) => {
 		hndLoad(event);
@@ -10,7 +11,6 @@ namespace doomClone {
 		let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("game");
 		let portraitCanvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("portraitCanvas");
 
-		f.RenderManager.initialize(true, true);
 		let root : f.Node = new f.Node("root");
 
 		let groundNode : Ground = new Ground();
@@ -22,9 +22,12 @@ namespace doomClone {
 		let player : Player = new Player();
 		root.appendChild(player);
 
+		let enemy : Enemy = new Enemy(player, 9, 20);
+		root.appendChild(enemy);
 
-		let wall : Wall = new Wall(player, 2, 4);
-		let wall1 : Wall = new Wall(player, 2, 2);
+
+		let wall : Wall = new Wall(player, enemy,2, 4);
+		let wall1 : Wall = new Wall(player, enemy, 2, 2);
 		root.appendChild(wall);
 		root.appendChild(wall1);
 
@@ -37,11 +40,8 @@ namespace doomClone {
 		let ammoKit : AmmoKit = new AmmoKit(player, 4, 4);
 		root.appendChild(ammoKit);
 
-		let door : Door = new Door(player, 2, 3);
+		let door : Door = new Door(player, enemy,2, 3);
 		root.appendChild(door);
-
-		let enemy : Enemy = new Enemy(player, 9, 10);
-		root.appendChild(enemy);
 
 		// let light : f.LightAmbient = new f.LightAmbient(new f.Color(1, 1, 0.5, 0.1));
 		// let directionalLight : f.LightDirectional = new f.LightDirectional(f.Color.CSS('white'));
@@ -66,13 +66,17 @@ namespace doomClone {
 		f.AudioManager.default.listenTo(root);
 		f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
 		f.Loop.addEventListener("loopFrame", renderLoop);
-		f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
+		f.Loop.start(f.LOOP_MODE.TIME_GAME, 30);
 
 		function renderLoop () {
 			if(!gameMenuManager.getIsPaused()) {
-				f.AudioManager.default.update();
-				viewport.draw();
-				viewportPortrait.draw();
+				if(!player.getIsDead()) {
+					f.AudioManager.default.update();
+					viewportPortrait.draw();
+					viewport.draw();
+				} else {
+					gameMenuManager.showDeadPrompt();
+				}
 			}
 		}
 

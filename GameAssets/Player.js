@@ -5,8 +5,8 @@ var doomClone;
     var fAid = FudgeAid;
     let speedTypes;
     (function (speedTypes) {
-        speedTypes[speedTypes["WALK"] = 0.015] = "WALK";
-        speedTypes[speedTypes["ROTATION"] = 0.15] = "ROTATION";
+        speedTypes[speedTypes["WALK"] = 0.01] = "WALK";
+        speedTypes[speedTypes["ROTATION"] = 0.05] = "ROTATION";
         speedTypes[speedTypes["SPRINT"] = 0.04] = "SPRINT";
     })(speedTypes || (speedTypes = {}));
     class Player extends f.Node {
@@ -14,6 +14,7 @@ var doomClone;
             super("Player");
             this.walkSpeed = speedTypes.WALK;
             this.rotationSpeed = speedTypes.ROTATION;
+            this.shotCollisionRadius = 0.9;
             this.isAllowedToMove = true;
             this.keyMap = new Map();
             this.playerCollisionEvent = new CustomEvent("playerCollision");
@@ -46,11 +47,26 @@ var doomClone;
             this.getParent().removeChild(bullet);
         }
         setHealth(health) {
-            this.health += health;
             this.healthBar.value = this.health;
+            if (this.health + health > 0) {
+                if (health > 0) {
+                    this.componentAudio.audio = this.pickUpSound;
+                    this.componentAudio.play(true);
+                }
+                else {
+                    this.health += (health / this.armor);
+                }
+            }
+            else {
+                this.setIsDeadTrue();
+            }
+        }
+        getIsDead() {
+            return this.isDead;
         }
         playPlayerAttackedSound() {
-            this.componentAudioPlayerAttacked.play(true);
+            this.componentAudio.audio = this.playerAttackedSound;
+            this.componentAudio.play(true);
         }
         getHealth() {
             return this.health;
@@ -58,70 +74,107 @@ var doomClone;
         setArmor(armor) {
             this.armor += armor;
             this.armorBar.innerText = String(this.armor) + "%";
-            this.componentAudioPickUpSound.play(true);
+            this.componentAudio.audio = this.pickUpSound;
+            this.componentAudio.play(true);
         }
         setAmmo(ammo) {
             this.ammo += ammo;
             this.ammoBar.innerText = String(this.ammo);
-            this.componentAudioPickUpSound.play(true);
+            this.componentAudio.audio = this.pickUpSound;
+            this.componentAudio.play(true);
+        }
+        setIsDeadTrue() {
+            this.componentAudio.audio = this.playerDyingSound;
+            this.componentAudio.play(true);
+            this.isDead = true;
         }
         //inits parameter, bars, audio and sprites
-        async initPlayer() {
+        initPlayer() {
             this.currentBullets = [];
             this.health = 100;
             this.ammo = 100;
             this.armor = 100;
             this.stamina = 100;
+            this.isDead = false;
             this.healthBar = document.getElementById("healthBar");
             this.staminaBar = document.getElementById("staminaBar");
             this.ammoBar = document.getElementById("ammoPanel");
             this.armorBar = document.getElementById("armorPanel");
-            this.loadPortraitSprites();
-            // this.loadSprites();
-            let shotSound = await f.Audio.load("../../DoomClone/sounds/pistol.wav");
-            let emptyAmmoSound = await f.Audio.load("../../DoomClone/sounds/wrong.mp3");
-            let pickUpSound = await f.Audio.load("../../DoomClone/sounds/reload.wav");
-            let playerDamagedSound = await f.Audio.load("../../DoomClone/sounds/playerShot.wav");
-            this.componentAudioShot = new f.ComponentAudio(shotSound);
-            this.componentAudioEmptySound = new f.ComponentAudio(emptyAmmoSound);
-            this.componentAudioPickUpSound = new f.ComponentAudio(pickUpSound);
-            this.componentAudioPlayerAttacked = new f.ComponentAudio(playerDamagedSound);
-            this.addComponent(new f.ComponentAudioListener());
-            this.addComponent(this.componentAudioShot);
-            this.addComponent(this.componentAudioPickUpSound);
-            this.addComponent(this.componentAudioEmptySound);
             this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
+            this.loadPortraitSprites();
+            this.loadSprites();
+            this.initSounds();
+            this.addEventListener("enemyShotCollision", () => { this.checkEnemyBulletCollision(); }, true);
+        }
+        checkEnemyBulletCollision() {
+            let enemy = this.getParent().getChildrenByName("Enemy")[0];
+            let projectiles = enemy.getBullets();
+            projectiles.forEach(bullet => {
+                if (bullet.getRange() > 0) {
+                    if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+                        enemy.deleteCertainBullet(bullet);
+                        this.playPlayerAttackedSound();
+                        this.setHealth(-bullet.getDamage());
+                    }
+                }
+                else {
+                    enemy.deleteCertainBullet(bullet);
+                }
+            });
+        }
+        calculateDistance(node) {
+            let wallTranslationCopy = this.mtxLocal.translation.copy;
+            let nodeTranslationCopy = node.mtxLocal.translation.copy;
+            wallTranslationCopy.subtract(nodeTranslationCopy);
+            return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
+        }
+        async initSounds() {
+            this.pistolSound = await f.Audio.load("../../DoomClone/sounds/pistol.wav");
+            this.magazineEmptySound = await f.Audio.load("../../DoomClone/sounds/wrong.mp3");
+            this.pickUpSound = await f.Audio.load("../../DoomClone/sounds/reload.wav");
+            this.playerAttackedSound = await f.Audio.load("../../DoomClone/sounds/playerShot.wav");
+            this.playerDyingSound = await f.Audio.load("../../DoomClone/sounds/playerDeath.wav");
+            this.componentAudio = new f.ComponentAudio(this.pistolSound);
+            this.addComponent(new f.ComponentAudioListener());
+            this.addComponent(this.componentAudio);
         }
         //loads portraitsprites
         loadPortraitSprites() {
-            let portraitSpriteSheetIMG = document.getElementById("portrait");
-            let portraitSpriteSheet = fAid.createSpriteSheet("pistol", portraitSpriteSheetIMG);
-            let portraitSpriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", portraitSpriteSheet);
-            let startRect = new f.Rectangle(0, 0, 24, 30, f.ORIGIN2D.TOPLEFT);
-            portraitSpriteSheetAnimation.generateByGrid(startRect, 3, new f.Vector2(0, 0), 72, f.ORIGIN2D.TOPLEFT);
+            let coat = new ƒ.CoatTextured();
+            coat.texture = new ƒ.TextureImage();
+            coat.texture.image = document.getElementById("portrait");
+            let portraitSpriteSheetAnimation = new fAid.SpriteSheetAnimation("portrait", coat);
+            let startRect = new f.Rectangle(0, 0, 25, 30, f.ORIGIN2D.TOPLEFT);
+            portraitSpriteSheetAnimation.generateByGrid(startRect, 3, new f.Vector2(0, 0), 72, f.ORIGIN2D.CENTER);
             this.portraitSprites = new fAid.NodeSprite('portraitSprite');
             this.portraitSprites.setAnimation(portraitSpriteSheetAnimation);
+            this.portraitSprites.framerate = 1;
             this.portraitSprites.showFrame(1);
-            this.portraitSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 3))));
+            this.portraitSprites.setFrameDirection(0);
         }
         loadSprites() {
-            let pistolSpriteSheetIMG = document.getElementById("pistol");
-            let pistolSpriteSheet = fAid.createSpriteSheet("pistol", pistolSpriteSheetIMG);
-            let spriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", pistolSpriteSheet);
+            let coat = new ƒ.CoatTextured();
+            coat.texture = new ƒ.TextureImage();
+            coat.texture.image = document.getElementById("pistol");
+            let spriteSheetAnimation = new fAid.SpriteSheetAnimation("pistol", coat);
             let startRect = new f.Rectangle(0, 0, 80, 122, f.ORIGIN2D.TOPLEFT);
             spriteSheetAnimation.generateByGrid(startRect, 5, new f.Vector2(0, 0), 64, f.ORIGIN2D.CENTER);
-            let nodeSprite = new fAid.NodeSprite('nodeSprite');
-            nodeSprite.setAnimation(spriteSheetAnimation);
-            this.appendChild(nodeSprite);
+            this.pistolSprites = new fAid.NodeSprite('pistolSprite');
+            this.pistolSprites.setAnimation(spriteSheetAnimation);
+            this.pistolSprites.framerate = 5;
+            this.pistolSprites.showFrame(1);
+            this.pistolSprites.setFrameDirection(0);
+            this.pistolSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(this.mtxLocal.translation.x, this.mtxLocal.translation.y + 1.8, this.mtxLocal.translation.z - 0.25))));
+            this.pistolSprites.mtxLocal.rotateX(90);
+            this.pistolSprites.mtxLocal.scale(f.Vector3.ONE(0.5));
+            this.pistolSprites.showFrame(0);
+            this.pistolSprites.setFrameDirection(0);
+            this.appendChild(this.pistolSprites);
         }
         //inits portraitCamera for face HUD
         initPortraitCamera() {
             this.portraitCamera = new f.ComponentCamera();
-            this.portraitCamera.backgroundColor = f.Color.CSS('black');
-            // this.portraitCamera.pivot.rotateY(180);
-            // this.portraitCamera.pivot.translateZ(5);
-            // this.portraitCamera.pivot.translateX(-2)
-            // this.portraitCamera.pivot.lookAt(this.portraitSprites.mtxLocal.translation, f.Vector3.Z());
+            this.portraitCamera.pivot.translateZ(-1);
         }
         //inits egoCamera and rotate it to player pov
         initEgoCamera() {
@@ -145,6 +198,7 @@ var doomClone;
             });
             window.addEventListener("keyup", (event) => {
                 this.keyMap.delete(event.code);
+                this.pistolSprites.setFrameDirection(0);
                 if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
                     this.walkSpeed = speedTypes.WALK;
                     if (this.stamina < 100) {
@@ -176,11 +230,13 @@ var doomClone;
         }
         checkArrowRight() {
             if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_RIGHT)) {
+                this.portraitSprites.showFrame(2);
                 this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
         checkArrowLeft() {
             if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_LEFT)) {
+                this.portraitSprites.showFrame(0);
                 this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
@@ -199,6 +255,8 @@ var doomClone;
                     this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
                     this.isAllowedToMove = true;
                 }
+                this.portraitSprites.showFrame(1);
+                this.pistolSprites.setFrameDirection(1);
             }
         }
         checkShiftKey() {
@@ -212,6 +270,7 @@ var doomClone;
                 if (this.isAllowedToMove) {
                     this.move(-this.walkSpeed * f.Loop.timeFrameGame);
                 }
+                this.pistolSprites.setFrameDirection(1);
             }
         }
         /*
@@ -250,11 +309,16 @@ var doomClone;
                 this.getParent().appendChild(bullet);
                 this.currentBullets.push(bullet);
                 this.setAmmo(-1);
-                this.componentAudioShot.play(true);
+                this.componentAudio.audio = this.pistolSound;
+                new f.Timer(f.Time.game, 100, 1, () => {
+                    this.pistolSprites.setFrameDirection(1);
+                });
             }
             else {
-                this.componentAudioEmptySound.play(true);
+                this.componentAudio.audio = this.magazineEmptySound;
             }
+            this.componentAudio.play(true);
+            this.pistolSprites.setFrameDirection(0);
         }
         reload() {
         }

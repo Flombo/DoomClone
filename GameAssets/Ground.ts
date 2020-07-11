@@ -19,12 +19,9 @@ namespace doomClone {
             groundTextureIMG.image = groundIMG;
             let groundTextureCoat: f.CoatTextured = new f.CoatTextured();
             groundTextureCoat.texture = groundTextureIMG;
-            groundTextureCoat.repetition = true;
-            groundTextureCoat.tilingX = 30;
-            groundTextureCoat.tilingY = 30;
             let groundMaterial: f.Material = new f.Material("ground", f.ShaderTexture, groundTextureCoat);
             let groundComponentMat: f.ComponentMaterial = new f.ComponentMaterial(groundMaterial);
-
+            groundComponentMat.pivot.scale(new f.Vector2(20,20));
             let groundTransformComp: f.ComponentTransform = new f.ComponentTransform(
                 f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, -1)))
             this.addComponent(groundTransformComp);
