@@ -5,8 +5,8 @@ namespace doomClone {
 
 	enum speedTypes {
 		'WALK' = 10 / 1000,
-		'ROTATION' = 50 / 1000,
-		'SPRINT' = 20 / 1000
+		'ROTATION' = speedTypes.WALK * 5,
+		'SPRINT' = speedTypes.WALK * 2
 	}
 
 	export class Player extends f.Node{
@@ -38,10 +38,12 @@ namespace doomClone {
 		private pistolSound : f.Audio;
 		private playerDyingSound : f.Audio;
 		private shotCollisionRadius : number = 0.9;
+		private controlsLoader : ControlsLoader;
 
 		constructor() {
 			super("Player");
 			this.isAllowedToMove = true;
+			this.controlsLoader = new ControlsLoader();
 			this.keyMap = new Map<string, boolean>();
 			this.playerCollisionEvent = new CustomEvent<any>("playerCollision");
 			this.playerInteractionEvent = new CustomEvent<any>("playerInteraction");
@@ -253,12 +255,13 @@ namespace doomClone {
 		}
 
 		private initKeyMap() : void {
-			this.keyMap.set(f.KEYBOARD_CODE.ARROW_UP, false);
-			this.keyMap.set(f.KEYBOARD_CODE.ARROW_DOWN, false);
-			this.keyMap.set(f.KEYBOARD_CODE.ARROW_RIGHT, false);
-			this.keyMap.set(f.KEYBOARD_CODE.ARROW_LEFT, false);
-			this.keyMap.set(f.KEYBOARD_CODE.SHIFT_LEFT, false);
-			this.keyMap.set(f.KEYBOARD_CODE.CTRL_LEFT, false);
+			this.keyMap.set(this.controlsLoader.getUpKey(), false);
+			this.keyMap.set(this.controlsLoader.getDownKey(), false);
+			this.keyMap.set(this.controlsLoader.getLeftKey(), false);
+			this.keyMap.set(this.controlsLoader.getRightKey(), false);
+			this.keyMap.set(this.controlsLoader.getInteractKey(), false);
+			this.keyMap.set(this.controlsLoader.getShootKey(), false);
+			this.keyMap.set(this.controlsLoader.getSprintKey(), false);
 		}
 
 		//inits key-handling for movement
@@ -284,35 +287,35 @@ namespace doomClone {
 
 		//checks userinput
 		private checkUserInput() : void {
-			this.checkArrowUp();
-			this.checkArrowLeft();
-			this.checkArrowRight();
-			this.checkArrowDown();
-			this.checkCTRLKey();
-			this.checkSpaceKey();
+			this.checkUpKey();
+			this.checkLeftKey();
+			this.checkRightKey();
+			this.checkDownKey();
+			this.checkShootKey();
+			this.checkInteractKey();
 		}
 
-		private checkSpaceKey() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.SPACE)) {
+		private checkInteractKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getInteractKey())) {
 				this.interact();
 			}
 		}
 
-		private checkCTRLKey() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.CTRL_LEFT)) {
+		private checkShootKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getShootKey())) {
 				this.shoot();
 			}
 		}
 
-		private checkArrowRight() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_RIGHT)) {
+		private checkRightKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getRightKey())) {
 				this.portraitSprites.showFrame(2);
 				this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
 			}
 		}
 
-		private checkArrowLeft() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_LEFT)) {
+		private checkLeftKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
 				this.portraitSprites.showFrame(0);
 				this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
 			}
@@ -322,12 +325,12 @@ namespace doomClone {
 			checks if up and / or shift keys are pressed.
 			if the player is colliding with a wall he will be ported backwards
 		*/
-		private checkArrowUp() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_UP)) {
+		private checkUpKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getUpKey())) {
 				this.checkCollision();
 				if(this.isAllowedToMove) {
 					this.move(this.walkSpeed * f.Loop.timeFrameGame);
-					this.checkShiftKey();
+					this.checkSprintKey();
 				} else {
 					this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
 					this.isAllowedToMove = true;
@@ -337,14 +340,14 @@ namespace doomClone {
 			}
 		}
 
-		private checkShiftKey() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.SHIFT_LEFT)) {
+		private checkSprintKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getSprintKey())) {
 				this.sprint();
 			}
 		}
 
-		private checkArrowDown() : void {
-			if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_DOWN)) {
+		private checkDownKey() : void {
+			if (this.keyMap.get(this.controlsLoader.getDownKey())) {
 				this.checkCollision();
 				if(this.isAllowedToMove) {
 					this.move(-this.walkSpeed * f.Loop.timeFrameGame);
@@ -402,10 +405,6 @@ namespace doomClone {
 			}
 			this.componentAudio.play(true);
 			this.pistolSprites.setFrameDirection(0);
-		}
-
-		private reload() : void {
-
 		}
 
 	}

@@ -1,0 +1,93 @@
+@keyframes blink {
+  0% {
+    background-color: lavender;
+  }
+  50% {
+    background-color: orangered;
+  }
+  100% {
+    background-color: yellow;
+  }
+}
+html {
+  width: 100%;
+  margin-left: 0;
+  top: 0;
+  font-family: "Roboto Light", sans-serif;
+  cursor: crosshair;
+}
+html body {
+  width: 100%;
+  top: 0;
+  margin: 0;
+  background-image: url("../spritesheets/HUDBG.png");
+}
+html body button:hover {
+  cursor: pointer;
+  opacity: 50%;
+}
+html body button:focus {
+  outline: 0;
+}
+html body .menuContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+html body .menuContainer .imgContainer {
+  display: flex;
+  flex-direction: column;
+  width: 30%;
+}
+html body .menuContainer .imgContainer section {
+  text-align: center;
+  color: sandybrown;
+  font-weight: normal;
+  font-size: 30px;
+}
+html body .menuContainer table {
+  border: solid 5px #202020;
+  border-radius: 10px;
+  padding: 2%;
+  color: #fff;
+  min-width: 50%;
+  margin-top: 1%;
+  font-size: 20px;
+}
+html body .menuContainer table button {
+  background-color: lavender;
+  border: none;
+  font-size: 20px;
+}
+html body .menuContainer table button:focus {
+  animation-name: blink;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+html body .menuContainer .buttonContainer {
+  margin-top: 5%;
+}
+html body .menuContainer .buttonContainer button {
+  background-image: url("../spritesheets/HUDBG.png");
+  border: 5px solid #202020;
+  border-radius: 10px;
+  min-width: 100%;
+  padding: 4%;
+  font-weight: bold;
+  font-size: 20px;
+  margin-top: 4%;
+  color: #fff;
+}
+html body .menuContainer .buttonContainer button a {
+  text-decoration: none;
+}
+html body .menuContainer .buttonContainer button a:active {
+  color: #fff;
+}
+html body .menuContainer .buttonContainer button a:visited {
+  color: #fff;
+}
+
+/*# sourceMappingURL=menu.css.map */

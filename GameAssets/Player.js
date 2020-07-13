@@ -16,6 +16,7 @@ var doomClone;
             this.rotationSpeed = speedTypes.ROTATION;
             this.shotCollisionRadius = 0.9;
             this.isAllowedToMove = true;
+            this.controlsLoader = new doomClone.ControlsLoader();
             this.keyMap = new Map();
             this.playerCollisionEvent = new CustomEvent("playerCollision");
             this.playerInteractionEvent = new CustomEvent("playerInteraction");
@@ -201,12 +202,13 @@ var doomClone;
             this.getParent().broadcastEvent(this.playerCollisionEvent);
         }
         initKeyMap() {
-            this.keyMap.set(f.KEYBOARD_CODE.ARROW_UP, false);
-            this.keyMap.set(f.KEYBOARD_CODE.ARROW_DOWN, false);
-            this.keyMap.set(f.KEYBOARD_CODE.ARROW_RIGHT, false);
-            this.keyMap.set(f.KEYBOARD_CODE.ARROW_LEFT, false);
-            this.keyMap.set(f.KEYBOARD_CODE.SHIFT_LEFT, false);
-            this.keyMap.set(f.KEYBOARD_CODE.CTRL_LEFT, false);
+            this.keyMap.set(this.controlsLoader.getUpKey(), false);
+            this.keyMap.set(this.controlsLoader.getDownKey(), false);
+            this.keyMap.set(this.controlsLoader.getLeftKey(), false);
+            this.keyMap.set(this.controlsLoader.getRightKey(), false);
+            this.keyMap.set(this.controlsLoader.getInteractKey(), false);
+            this.keyMap.set(this.controlsLoader.getShootKey(), false);
+            this.keyMap.set(this.controlsLoader.getSprintKey(), false);
         }
         //inits key-handling for movement
         initKeyHandlers() {
@@ -230,31 +232,31 @@ var doomClone;
         }
         //checks userinput
         checkUserInput() {
-            this.checkArrowUp();
-            this.checkArrowLeft();
-            this.checkArrowRight();
-            this.checkArrowDown();
-            this.checkCTRLKey();
-            this.checkSpaceKey();
+            this.checkUpKey();
+            this.checkLeftKey();
+            this.checkRightKey();
+            this.checkDownKey();
+            this.checkShootKey();
+            this.checkInteractKey();
         }
-        checkSpaceKey() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.SPACE)) {
+        checkInteractKey() {
+            if (this.keyMap.get(this.controlsLoader.getInteractKey())) {
                 this.interact();
             }
         }
-        checkCTRLKey() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.CTRL_LEFT)) {
+        checkShootKey() {
+            if (this.keyMap.get(this.controlsLoader.getShootKey())) {
                 this.shoot();
             }
         }
-        checkArrowRight() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_RIGHT)) {
+        checkRightKey() {
+            if (this.keyMap.get(this.controlsLoader.getRightKey())) {
                 this.portraitSprites.showFrame(2);
                 this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
-        checkArrowLeft() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_LEFT)) {
+        checkLeftKey() {
+            if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
                 this.portraitSprites.showFrame(0);
                 this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
             }
@@ -263,12 +265,12 @@ var doomClone;
             checks if up and / or shift keys are pressed.
             if the player is colliding with a wall he will be ported backwards
         */
-        checkArrowUp() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_UP)) {
+        checkUpKey() {
+            if (this.keyMap.get(this.controlsLoader.getUpKey())) {
                 this.checkCollision();
                 if (this.isAllowedToMove) {
                     this.move(this.walkSpeed * f.Loop.timeFrameGame);
-                    this.checkShiftKey();
+                    this.checkSprintKey();
                 }
                 else {
                     this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
@@ -278,13 +280,13 @@ var doomClone;
                 this.pistolSprites.setFrameDirection(1);
             }
         }
-        checkShiftKey() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.SHIFT_LEFT)) {
+        checkSprintKey() {
+            if (this.keyMap.get(this.controlsLoader.getSprintKey())) {
                 this.sprint();
             }
         }
-        checkArrowDown() {
-            if (this.keyMap.get(f.KEYBOARD_CODE.ARROW_DOWN)) {
+        checkDownKey() {
+            if (this.keyMap.get(this.controlsLoader.getDownKey())) {
                 this.checkCollision();
                 if (this.isAllowedToMove) {
                     this.move(-this.walkSpeed * f.Loop.timeFrameGame);
@@ -338,8 +340,6 @@ var doomClone;
             }
             this.componentAudio.play(true);
             this.pistolSprites.setFrameDirection(0);
-        }
-        reload() {
         }
     }
     doomClone.Player = Player;
