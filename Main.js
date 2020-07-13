@@ -62,7 +62,7 @@ var doomClone;
                     viewport.draw();
                 }
                 else {
-                    gameMenuManager.showDeadPrompt();
+                    gameMenuManager.showDeadMenu();
                 }
             }
         }

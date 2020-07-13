@@ -1,0 +1,109 @@
+@import "variables";
+
+@keyframes blink {
+  0% {
+    background-color: lavender;
+  }
+  50% {
+    background-color: orangered;
+  }
+  100% {
+    background-color: yellow;
+  }
+}
+
+html{
+  width: 100%;
+  margin-left: 0;
+  top: 0;
+  font-family: 'Roboto Light', sans-serif;
+  cursor: crosshair;
+  body {
+    width: 100%;
+    top: 0;
+    margin: 0;
+    background-image: url("../spritesheets/HUDBG.png");
+
+    button {
+      &:hover {
+        cursor: pointer;
+        opacity: 50%;
+      }
+
+      &:focus {
+        outline: 0;
+      }
+    }
+
+    .menuContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .imgContainer {
+        display: flex;
+        flex-direction: column;
+        width: 30%;
+
+        section {
+          text-align: center;
+          color: sandybrown;
+          font-weight: normal;
+          font-size: 30px;
+        }
+      }
+
+      table {
+        border: solid 5px $bgColor;
+        border-radius: 10px;
+        padding: 2%;
+        color: $fgColor;
+        min-width: 50%;
+        margin-top: 1%;
+        font-size: 20px;
+
+        button {
+          background-color: lavender;
+          border: none;
+          font-size: 20px;
+
+          &:focus {
+            animation-name: blink;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+          }
+        }
+      }
+
+      .buttonContainer {
+        margin-top: 5%;
+
+        button {
+          background-image: url("../spritesheets/HUDBG.png");
+          border: 5px solid $bgColor;
+          border-radius: 10px;
+          min-width: 100%;
+          padding: 4%;
+          font-weight: bold;
+          font-size: 20px;
+          margin-top: 4%;
+          color: $fgColor;
+
+          a {
+            text-decoration: none;
+
+            &:active {
+               color: $fgColor;
+            }
+
+            &:visited {
+              color: $fgColor;
+            }
+          }
+        }
+      }
+    }
+  }
+}

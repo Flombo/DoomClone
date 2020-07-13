@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ControlMenu : DOOM-PRIMA-Edition</title>
+    <link rel="stylesheet" href="../../styles/menu.css">
+    <script src="../../FudgeCore/FudgeCore.js"></script>
+    <script src="../../Menus/ControlMenuManager.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="menuContainer">
+    <div class="imgContainer">
+        <img src="../../spritesheets/doomLogo.png">
+        <section>Controls</section>
+    </div>
+    <table>
+        <tr>
+            <td>Move up :</td>
+            <td>
+                <button id="upButton">Arrow-up</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Move down :</td>
+            <td>
+                <button id="downButton">Arrow-down</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Turn right :</td>
+            <td>
+                <button id="rightButton">Arrow-right</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Turn left :</td>
+            <td>
+                <button id="leftButton">Arrow-left</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Sprint :</td>
+            <td>
+                <button id="sprintButton">Shift-left</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Shoot :</td>
+            <td>
+                <button id="shootButton">CTRL-left</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Interact :</td>
+            <td>
+                <button id="interactButton">Spacebar</button>
+            </td>
+        </tr>
+    </table>
+    <div class="buttonContainer">
+        <button id="saveControlsButton">Save</button>
+        <button id="defaultButton">Default</button>
+        <button id="mainMenuButton">
+            <a href="MainMenu.html">Go to mainmenu</a>
+        </button>
+    </div>
+</div>
+</body>
+</html>

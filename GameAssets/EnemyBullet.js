@@ -21,7 +21,7 @@ var doomClone;
             this.initSound();
         }
         async initSound() {
-            let explosionSound = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
+            let explosionSound = await f.Audio.load("../../sounds/barrelExploded.wav");
             this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
         }
         initExplosionSprite() {

@@ -19,7 +19,7 @@ namespace doomClone {
         }
 
         private async initDoorSounds() : Promise<void> {
-            let doorClosingSound : f.Audio = await f.Audio.load("../../DoomClone/sounds/doorClosed.wav");
+            let doorClosingSound : f.Audio = await f.Audio.load("../../sounds/doorClosed.wav");
             this.componentAudioDoorClosingAndOpening = new f.ComponentAudio(doorClosingSound);
             this.addComponent(this.componentAudioDoorClosingAndOpening);
         }

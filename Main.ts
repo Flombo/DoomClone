@@ -1,7 +1,6 @@
 namespace doomClone {
 
 	import f = FudgeCore;
-	import fAid = FudgeAid;
 
 	window.addEventListener("load", (event) => {
 		hndLoad(event);
@@ -81,7 +80,7 @@ namespace doomClone {
 					viewportPortrait.draw();
 					viewport.draw();
 				} else {
-					gameMenuManager.showDeadPrompt();
+					gameMenuManager.showDeadMenu();
 				}
 			}
 		}

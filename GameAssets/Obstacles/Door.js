@@ -14,7 +14,7 @@ var doomClone;
             this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision(); }, true);
         }
         async initDoorSounds() {
-            let doorClosingSound = await f.Audio.load("../../DoomClone/sounds/doorClosed.wav");
+            let doorClosingSound = await f.Audio.load("../../sounds/doorClosed.wav");
             this.componentAudioDoorClosingAndOpening = new f.ComponentAudio(doorClosingSound);
             this.addComponent(this.componentAudioDoorClosingAndOpening);
         }

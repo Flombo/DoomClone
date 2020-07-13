@@ -2,28 +2,23 @@
 var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
+    let MenuURLS;
+    (function (MenuURLS) {
+        MenuURLS["WINMENU"] = "/Menus/WinMenu.html";
+        MenuURLS["DEATHMENU"] = "/Menus/DeathMenu.html";
+    })(MenuURLS || (MenuURLS = {}));
     class GameMenuManager {
         constructor(gameCanvas) {
-            this.isPaused = true;
-            this.pausingBlocked = true;
+            this.isPaused = false;
             this.gameCanvas = gameCanvas;
-            this.header = document.getElementsByTagName("header")[0];
+            this.HUD = document.getElementsByTagName("header")[0];
             this.pausePrompt = document.getElementById("pausePrompt");
-            this.startPrompt = document.getElementById("startPrompt");
-        }
-        getIsPaused() {
-            return this.isPaused;
-        }
-        showDeadPrompt() {
-            this.pausingBlocked = true;
-            let deadPrompt = document.getElementById("deadPrompt");
-            deadPrompt.setAttribute("class", "visible");
-            this.header.setAttribute("class", "invisible");
-            this.gameCanvas.setAttribute("style", "opacity: 25%;");
         }
         initGameMenuHandling() {
+            this.styleCanvas();
+            window.addEventListener("resize", () => { this.styleCanvas(); });
             window.addEventListener("keydown", (event) => {
-                if (event.key === f.KEYBOARD_CODE.ESC && !this.pausingBlocked) {
+                if (event.key === f.KEYBOARD_CODE.ESC) {
                     if (this.isPaused) {
                         this.unpause();
                     }
@@ -31,24 +26,49 @@ var doomClone;
                         this.pause();
                     }
                 }
-                else {
-                    if (this.startPrompt !== null)
-                        this.startPrompt.remove();
-                    this.pausingBlocked = false;
-                    this.unpause();
-                }
             });
+        }
+        getIsPaused() {
+            return this.isPaused;
+        }
+        showWinMenu() {
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
+        }
+        showDeadMenu() {
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
+        }
+        static setURLToMenuURL(newURL) {
+            if (newURL !== null) {
+                window.location.href = newURL;
+            }
+        }
+        static generateMenuURL(url) {
+            let currentURL = window.location.href;
+            let newURL = null;
+            let slashCount = 0;
+            for (let i = 0; i < currentURL.length; i++) {
+                if (currentURL.charAt(i) === '/') {
+                    slashCount++;
+                    if (slashCount == 5) {
+                        newURL = currentURL.substring(0, i);
+                        console.log(newURL);
+                        newURL += url;
+                        break;
+                    }
+                }
+            }
+            return newURL;
         }
         pause() {
             this.isPaused = true;
             this.pausePrompt.setAttribute("class", "visible");
             this.gameCanvas.setAttribute("style", "opacity: 25%;");
-            this.header.setAttribute("class", "invisible");
+            this.HUD.setAttribute("class", "invisible");
         }
         unpause() {
             this.isPaused = false;
             this.pausePrompt.setAttribute("class", "");
-            this.header.setAttribute("class", "");
+            this.HUD.setAttribute("class", "");
             this.styleCanvas();
         }
         styleCanvas() {

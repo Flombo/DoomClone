@@ -2,64 +2,85 @@ namespace doomClone {
 
     import f = FudgeCore;
 
+    enum MenuURLS{
+        WINMENU = '/Menus/WinMenu.html', DEATHMENU = '/Menus/DeathMenu.html'
+    }
+
     export class GameMenuManager {
 
         private isPaused : boolean;
-        private pausingBlocked : boolean;
         private gameCanvas : HTMLCanvasElement;
-        private header : HTMLElement;
+        private HUD : HTMLElement;
         private pausePrompt : HTMLElement;
-        private startPrompt : HTMLElement;
 
         constructor(gameCanvas : HTMLCanvasElement) {
-            this.isPaused = true;
-            this.pausingBlocked = true;
+            this.isPaused = false;
             this.gameCanvas = gameCanvas;
-            this.header = document.getElementsByTagName("header")[0];
+            this.HUD = document.getElementsByTagName("header")[0];
             this.pausePrompt = <HTMLElement>document.getElementById("pausePrompt");
-            this.startPrompt = <HTMLElement>document.getElementById("startPrompt");
+        }
+
+        public initGameMenuHandling() : void {
+            this.styleCanvas();
+            window.addEventListener("resize", () => { this.styleCanvas(); });
+            window.addEventListener("keydown", (event) => {
+                if(event.key === f.KEYBOARD_CODE.ESC){
+                    if(this.isPaused){
+                        this.unpause();
+                    } else {
+                        this.pause();
+                    }
+                }
+            });
         }
 
         public getIsPaused() : boolean {
             return this.isPaused;
         }
 
-        public showDeadPrompt() : void {
-            this.pausingBlocked = true;
-            let deadPrompt : HTMLElement = <HTMLElement>document.getElementById("deadPrompt");
-            deadPrompt.setAttribute("class", "visible");
-            this.header.setAttribute("class", "invisible");
-            this.gameCanvas.setAttribute("style", "opacity: 25%;");
+        public showWinMenu() : void {
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
         }
 
-        public initGameMenuHandling() : void {
-            window.addEventListener("keydown", (event) => {
+        public showDeadMenu() : void {
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
+        }
 
-                if(event.key === f.KEYBOARD_CODE.ESC && !this.pausingBlocked){
-                    if(this.isPaused){
-                        this.unpause();
-                    } else {
-                        this.pause();
+        private static setURLToMenuURL(newURL : string) : void {
+            if(newURL !== null) {
+                window.location.href = newURL;
+            }
+        }
+
+        private static generateMenuURL(url : string) : string {
+            let currentURL : string = window.location.href;
+            let newURL : string = null;
+            let slashCount : number = 0;
+            for(let i : number = 0; i < currentURL.length; i++) {
+                if(currentURL.charAt(i) === '/') {
+                    slashCount++;
+                    if(slashCount == 5) {
+                        newURL = currentURL.substring(0, i);
+                        console.log(newURL);
+                        newURL += url;
+                        break;
                     }
-                } else {
-                    if(this.startPrompt !== null) this.startPrompt.remove();
-                    this.pausingBlocked = false;
-                    this.unpause();
                 }
-            });
+            }
+            return newURL;
         }
 
         private pause() : void {
             this.isPaused = true;
             this.pausePrompt.setAttribute("class", "visible");
             this.gameCanvas.setAttribute("style", "opacity: 25%;");
-            this.header.setAttribute("class", "invisible");
+            this.HUD.setAttribute("class", "invisible");
         }
 
         private unpause() : void {
             this.isPaused = false;
             this.pausePrompt.setAttribute("class", "");
-            this.header.setAttribute("class", "");
+            this.HUD.setAttribute("class", "");
             this.styleCanvas();
         }
 

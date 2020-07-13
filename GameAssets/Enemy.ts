@@ -23,13 +23,15 @@ namespace doomClone {
         private attackedSound : f.Audio;
         private readonly checkWallCollisionForEnemyEvent : CustomEvent;
         private currentState : string;
-        private attackTimer : f.Timer;
+        private attackTimer : f.Timer
+        private isAlive : boolean;
 
         constructor(player : Player, x : number, y : number) {
             super("Enemy");
             this.player = player;
             this.attackTimer = null;
             this.currentState = 'idle';
+            this.isAlive = true;
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent<any>("checkWallCollisionForEnemy");
             this.initSounds();
@@ -56,9 +58,9 @@ namespace doomClone {
         }
 
         private async initSounds() : Promise<void> {
-            this.attackSound = await f.Audio.load("../../DoomClone/sounds/decademonAttack.wav");
-            this.dyingSound = await f.Audio.load("../../DoomClone/sounds/decademonDead.wav");
-            this.attackedSound = await f.Audio.load("../../DoomClone/sounds/decademonShot.wav");
+            this.attackSound = await f.Audio.load("../../sounds/decademonAttack.wav");
+            this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
+            this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
             this.componentAudio = new f.ComponentAudio(this.attackedSound);
         }
 
@@ -157,22 +159,24 @@ namespace doomClone {
         }
 
         private checkCurrentState = () => {
-            switch (this.currentState) {
-                case 'avoid':
-                    this.avoid();
-                    break;
-                case 'hunt':
-                    this.hunt();
-                    break;
-                case 'attack':
-                    this.attack();
-                    break;
-                case 'flight':
-                    this.flee();
-                    break;
-                case 'idle':
-                    this.idle();
-                    break;
+            if(this.isAlive) {
+                switch (this.currentState) {
+                    case 'avoid':
+                        this.avoid();
+                        break;
+                    case 'hunt':
+                        this.hunt();
+                        break;
+                    case 'attack':
+                        this.attack();
+                        break;
+                    case 'flight':
+                        this.flee();
+                        break;
+                    case 'idle':
+                        this.idle();
+                        break;
+                }
             }
         }
 
@@ -240,6 +244,8 @@ namespace doomClone {
 
         private setHealth(damage : number) : void {
             if(this.health - damage <= 0) {
+                this.attackTimer = null;
+                this.isAlive = false;
                 this.componentAudio.audio = this.attackedSound;
                 this.die();
             } else {
@@ -255,11 +261,11 @@ namespace doomClone {
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkPlayerPositionRelativeToRadius);
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
             this.addAndRemoveSprites(this.deathSprites);
+            this.bullets.forEach(bullet => {
+                this.deleteCertainBullet(bullet);
+            });
             new f.Timer(f.Time.game, 1000, 1, () => {
                 if(this.getParent() !== null) {
-                    this.bullets.forEach(bullet => {
-                        this.deleteCertainBullet(bullet);
-                    });
                     this.getParent().removeChild(this);
                 }
             });

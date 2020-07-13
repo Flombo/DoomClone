@@ -24,7 +24,7 @@ namespace doomClone {
         }
 
         private async initSound() : Promise<void> {
-            let explosionSound: f.Audio = await f.Audio.load("../../DoomClone/sounds/barrelExploded.wav");
+            let explosionSound: f.Audio = await f.Audio.load("../../sounds/barrelExploded.wav");
             this.componentAudioExplosion = new f.ComponentAudio(explosionSound);
         }
 

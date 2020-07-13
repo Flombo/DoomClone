@@ -180,11 +180,11 @@ namespace doomClone {
 		}
 
 		private async initSounds() : Promise<void> {
-			this.pistolSound = await f.Audio.load("../../DoomClone/sounds/pistol.wav");
-			this.magazineEmptySound = await f.Audio.load("../../DoomClone/sounds/wrong.mp3");
-			this.pickUpSound = await f.Audio.load("../../DoomClone/sounds/reload.wav");
-			this.playerAttackedSound = await f.Audio.load("../../DoomClone/sounds/playerShot.wav");
-			this.playerDyingSound = await f.Audio.load("../../DoomClone/sounds/playerDeath.wav");
+			this.pistolSound = await f.Audio.load("../../sounds/pistol.wav");
+			this.magazineEmptySound = await f.Audio.load("../../sounds/wrong.mp3");
+			this.pickUpSound = await f.Audio.load("../../sounds/reload.wav");
+			this.playerAttackedSound = await f.Audio.load("../../sounds/playerShot.wav");
+			this.playerDyingSound = await f.Audio.load("../../sounds/playerDeath.wav");
 			this.componentAudio = new f.ComponentAudio(this.pistolSound);
 			this.addComponent(new f.ComponentAudioListener());
 			this.addComponent(this.componentAudio);
