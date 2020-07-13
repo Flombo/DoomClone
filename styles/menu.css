@@ -40,6 +40,9 @@ html body .menuContainer .imgContainer {
   flex-direction: column;
   width: 30%;
 }
+html body .menuContainer .imgContainer img {
+  visibility: visible;
+}
 html body .menuContainer .imgContainer section {
   text-align: center;
   color: sandybrown;

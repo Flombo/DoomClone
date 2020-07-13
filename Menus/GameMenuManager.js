@@ -12,11 +12,15 @@ var doomClone;
             this.isPaused = false;
             this.gameCanvas = gameCanvas;
             this.HUD = document.getElementsByTagName("header")[0];
-            this.pausePrompt = document.getElementById("pausePrompt");
+            this.pauseMenu = document.getElementById("pauseMenu");
+            this.resumeButton = document.getElementById("resumeGameButton");
         }
         initGameMenuHandling() {
             this.styleCanvas();
             window.addEventListener("resize", () => { this.styleCanvas(); });
+            this.resumeButton.addEventListener("mousedown", () => {
+                this.unpause();
+            });
             window.addEventListener("keydown", (event) => {
                 if (event.key === f.KEYBOARD_CODE.ESC) {
                     if (this.isPaused) {
@@ -61,14 +65,14 @@ var doomClone;
         }
         pause() {
             this.isPaused = true;
-            this.pausePrompt.setAttribute("class", "visible");
             this.gameCanvas.setAttribute("style", "opacity: 25%;");
             this.HUD.setAttribute("class", "invisible");
+            this.pauseMenu.setAttribute("style", "display: flex;");
         }
         unpause() {
             this.isPaused = false;
-            this.pausePrompt.setAttribute("class", "");
             this.HUD.setAttribute("class", "");
+            this.pauseMenu.setAttribute("style", "display: none;");
             this.styleCanvas();
         }
         styleCanvas() {
