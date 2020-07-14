@@ -94,6 +94,10 @@ html body .menuContainer .buttonContainer button a:active {
 html body .menuContainer .buttonContainer button a:visited {
   color: #fff;
 }
+html body .menuContainer .buttonContainer #saveControlsButton {
+  border-color: lightgreen;
+  color: lightgreen;
+}
 
 html {
   width: 100%;

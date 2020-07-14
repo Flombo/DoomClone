@@ -1,27 +1,35 @@
 "use strict";
 var doomClone;
 (function (doomClone) {
+    var f = FudgeCore;
     class ControlsLoader {
         getUpKey() {
-            return localStorage.getItem('UP');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('UP', f.KEYBOARD_CODE.ARROW_UP);
         }
         getDownKey() {
-            return localStorage.getItem('DOWN');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('DOWN', f.KEYBOARD_CODE.ARROW_DOWN);
         }
         getLeftKey() {
-            return localStorage.getItem('LEFT');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('LEFT', f.KEYBOARD_CODE.ARROW_LEFT);
         }
         getRightKey() {
-            return localStorage.getItem('RIGHT');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('RIGHT', f.KEYBOARD_CODE.ARROW_RIGHT);
         }
         getShootKey() {
-            return localStorage.getItem('SHOOT');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('SHOOT', f.KEYBOARD_CODE.CTRL_LEFT);
         }
         getSprintKey() {
-            return localStorage.getItem('SPRINT');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('SPRINT', f.KEYBOARD_CODE.SHIFT_LEFT);
         }
         getInteractKey() {
-            return localStorage.getItem('INTERACT');
+            return doomClone.ControlsLoader.loadCertainValueWithKey('INTERACT', f.KEYBOARD_CODE.SPACE);
+        }
+        static loadCertainValueWithKey(key, defaultValue) {
+            let loadedValue = localStorage.getItem(key);
+            if (loadedValue === null) {
+                loadedValue = defaultValue;
+            }
+            return loadedValue;
         }
     }
     doomClone.ControlsLoader = ControlsLoader;

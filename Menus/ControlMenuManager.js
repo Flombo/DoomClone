@@ -59,6 +59,10 @@ var doomClone;
                     }
                 });
             }
+            else {
+                this.resetButtonLayout(Array.from(buttons));
+                this.saveButtonLayout(Array.from(buttons));
+            }
         }
         initHandling() {
             let buttons = document.getElementsByTagName("table")[0].getElementsByTagName("button");

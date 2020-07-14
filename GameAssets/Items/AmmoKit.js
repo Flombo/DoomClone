@@ -4,7 +4,7 @@ var doomClone;
     var f = FudgeCore;
     class AmmoKit extends doomClone.Item {
         constructor(player, x, y) {
-            super(player, x, y, "Ammo", "yellow");
+            super(player, "Ammo", x, y, document.getElementById("ammo"));
             this.ammoAmount = 10;
             this.checkCollision = () => {
                 if (this.isColliding) {

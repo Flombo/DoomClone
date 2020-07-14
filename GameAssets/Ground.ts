@@ -12,8 +12,8 @@ namespace doomClone {
         private initGround() : void {
             let groundMesh: f.MeshQuad = new f.MeshQuad();
             let groundMeshComp: f.ComponentMesh = new f.ComponentMesh(groundMesh);
-            groundMeshComp.pivot.scaleY(30);
-            groundMeshComp.pivot.scaleX(30);
+            groundMeshComp.pivot.scaleY(35);
+            groundMeshComp.pivot.scaleX(35);
             let groundIMG: HTMLImageElement = <HTMLImageElement>document.getElementById("ground");
             let groundTextureIMG: f.TextureImage = new f.TextureImage();
             groundTextureIMG.image = groundIMG;

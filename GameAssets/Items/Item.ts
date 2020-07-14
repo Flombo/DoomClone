@@ -9,26 +9,23 @@ namespace doomClone {
         private rotationSpeed : number = 50 / 1000;
         protected isColliding : boolean;
 
-        constructor(player : Player, x : number, y : number, name : string, color : string) {
+        constructor(player : Player, name : string, x : number, y : number, img : HTMLImageElement) {
             super(name);
             this.player = player;
-            this.init(x, y, color);
+            this.init(x, y, img);
         }
 
-        private init(x : number, y : number, color : string) : void {
-            // let ammoIMG: HTMLImageElement = <HTMLImageElement>document.getElementById("ammo");
+
+        protected init(x : number, y : number, img : HTMLImageElement) : void {
             let componentMesh: f.ComponentMesh = new f.ComponentMesh(new f.MeshCube());
             componentMesh.pivot.scaleZ(0.25);
             componentMesh.pivot.scaleX(0.25);
             componentMesh.pivot.scaleY(0.25);
-            // let ammoTextureIMG: f.TextureImage = new f.TextureImage();
-            // ammoTextureIMG.image = ammoIMG;
-            // let ammoTextureCoat: f.CoatTextured = new f.CoatTextured();
-            // ammoTextureCoat.texture = ammoTextureIMG;
-            // ammoTextureCoat.repetition = true;
-            // ammoTextureCoat.tilingX = 30;
-            // ammoTextureCoat.tilingY = 30;
-            let material: f.Material = new f.Material("Health", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(color)));
+            let textureImage: f.TextureImage = new f.TextureImage();
+            textureImage.image = img;
+            let coatTextured: f.CoatTextured = new f.CoatTextured();
+            coatTextured.texture = textureImage;
+            let material: f.Material = new f.Material("Health", f.ShaderTexture, coatTextured);
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(material);
             let componentTransform: f.ComponentTransform = new f.ComponentTransform(
                 f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));

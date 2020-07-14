@@ -80,6 +80,7 @@ html{
             animation-iteration-count: infinite;
             animation-timing-function: ease-in-out;
           }
+
         }
       }
 
@@ -107,7 +108,13 @@ html{
             &:visited {
               color: $fgColor;
             }
+
           }
+        }
+
+        #saveControlsButton {
+          border-color: lightgreen;
+          color: lightgreen;
         }
       }
     }

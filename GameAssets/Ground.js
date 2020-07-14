@@ -10,8 +10,8 @@ var doomClone;
         initGround() {
             let groundMesh = new f.MeshQuad();
             let groundMeshComp = new f.ComponentMesh(groundMesh);
-            groundMeshComp.pivot.scaleY(30);
-            groundMeshComp.pivot.scaleX(30);
+            groundMeshComp.pivot.scaleY(35);
+            groundMeshComp.pivot.scaleX(35);
             let groundIMG = document.getElementById("ground");
             let groundTextureIMG = new f.TextureImage();
             groundTextureIMG.image = groundIMG;

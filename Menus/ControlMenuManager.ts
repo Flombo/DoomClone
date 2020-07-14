@@ -61,6 +61,9 @@ namespace doomClone {
                             break;
                     }
                 });
+            } else {
+                this.resetButtonLayout(<HTMLButtonElement[]>Array.from(buttons));
+                this.saveButtonLayout(<HTMLButtonElement[]>Array.from(buttons));
             }
         }
 

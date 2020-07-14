@@ -7,7 +7,7 @@ namespace doomClone {
         private healthAmount : number = 10;
 
         constructor(player: Player, x: number, y: number) {
-            super(player, x, y, "Health", "red");
+            super(player, "Health", x, y, <HTMLImageElement>document.getElementById("health"));
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCollision);
         }
 

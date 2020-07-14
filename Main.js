@@ -16,21 +16,65 @@ var doomClone;
         let player = new doomClone.Player();
         root.appendChild(player);
         let enemies = [];
-        let enemy = new doomClone.Enemy(player, 9, 20);
+        let enemy = new doomClone.Enemy(player, 12, 12);
         root.appendChild(enemy);
         enemies.push(enemy);
-        let enemy1 = new doomClone.Enemy(player, -15, -25);
+        let enemy1 = new doomClone.Enemy(player, -10, -10);
         root.appendChild(enemy1);
         enemies.push(enemy1);
         let wall = new doomClone.Wall(player, enemies, 2, 4);
         let wall1 = new doomClone.Wall(player, enemies, 2, 1);
+        let wall2 = new doomClone.Wall(player, enemies, 3, 1);
+        let wall3 = new doomClone.Wall(player, enemies, 4, 1);
+        let wall4 = new doomClone.Wall(player, enemies, 5, 1);
+        let wall5 = new doomClone.Wall(player, enemies, 6, 1);
+        let wall6 = new doomClone.Wall(player, enemies, 3, 4);
+        let wall7 = new doomClone.Wall(player, enemies, 4, 4);
+        let wall8 = new doomClone.Wall(player, enemies, 5, 4);
+        let wall9 = new doomClone.Wall(player, enemies, 6, 4);
+        let wall10 = new doomClone.Wall(player, enemies, 6, 3);
+        let wall11 = new doomClone.Wall(player, enemies, 6, 2);
         root.appendChild(wall);
         root.appendChild(wall1);
+        root.appendChild(wall2);
+        root.appendChild(wall3);
+        root.appendChild(wall4);
+        root.appendChild(wall5);
+        root.appendChild(wall6);
+        root.appendChild(wall7);
+        root.appendChild(wall8);
+        root.appendChild(wall9);
+        root.appendChild(wall10);
+        root.appendChild(wall11);
+        for (let y = 16; y >= 16; y--) {
+            for (let x = 17; x > -17; x--) {
+                let wallLeft = new doomClone.Wall(player, enemies, x, y);
+                root.appendChild(wallLeft);
+            }
+        }
+        for (let y = -16; y <= -16; y++) {
+            for (let x = 17; x > -17; x--) {
+                let wallRight = new doomClone.Wall(player, enemies, x, y);
+                root.appendChild(wallRight);
+            }
+        }
+        for (let x = 17; x >= 17; x--) {
+            for (let y = 16; y > -16; y--) {
+                let wallTop = new doomClone.Wall(player, enemies, x, y);
+                root.appendChild(wallTop);
+            }
+        }
+        for (let x = -13; x <= -13; x++) {
+            for (let y = 16; y > -16; y--) {
+                let wallBottom = new doomClone.Wall(player, enemies, x, y);
+                root.appendChild(wallBottom);
+            }
+        }
         let healthKit = new doomClone.HealthKit(player, -8, 4);
         root.appendChild(healthKit);
         let armorKit = new doomClone.ArmorKit(player, -4, -4);
         root.appendChild(armorKit);
-        let ammoKit = new doomClone.AmmoKit(player, 4, 4);
+        let ammoKit = new doomClone.AmmoKit(player, 4, 2);
         root.appendChild(ammoKit);
         let door = new doomClone.Door(player, enemies, 2, 2.5);
         root.appendChild(door);
@@ -60,6 +104,7 @@ var doomClone;
                     f.AudioManager.default.update();
                     viewportPortrait.draw();
                     viewport.draw();
+                    console.log(f.Loop.getFpsRealAverage());
                 }
                 else {
                     gameMenuManager.showDeadMenu();
