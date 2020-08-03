@@ -7,7 +7,7 @@ var doomClone;
         constructor(name, startMatrix, speed, range, damage, shotCollisionEvent, z, y) {
             super(name);
             this.update = () => {
-                let distanceToTravel = this.speed * f.Loop.timeFrameGame;
+                let distanceToTravel = this.speed * f.Loop.timeFrameReal;
                 this.mtxLocal.translateZ(distanceToTravel);
                 this.getParent().broadcastEvent(this.shotCollisionEvent);
                 this.range--;

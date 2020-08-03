@@ -170,7 +170,7 @@ var doomClone;
         }
         hunt() {
             this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameGame);
+            this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameReal);
             this.idleSprites.showFrame(0);
             this.idleSprites.setFrameDirection(0);
         }
@@ -178,7 +178,7 @@ var doomClone;
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.showFrame(3);
             // this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameGame);
+            this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameReal);
         }
         attack() {
             if (!this.player.getIsDead() && this.attackTimer === null) {
@@ -186,6 +186,7 @@ var doomClone;
                 this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
+                    console.log(this.componentAudio);
                     this.componentAudio.play(true);
                     if (this.getParent() !== null) {
                         let enemyBullet = new doomClone.EnemyBullet(this.mtxLocal);

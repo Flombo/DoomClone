@@ -41,7 +41,7 @@ namespace doomClone {
         }
 
         private animateRotation = () => {
-            this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameGame);
+            this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameReal);
         }
 
         private checkPlayerCollision = () => {

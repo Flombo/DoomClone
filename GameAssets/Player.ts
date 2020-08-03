@@ -318,7 +318,7 @@ namespace doomClone {
 			if (this.keyMap.get(this.controlsLoader.getRightKey())) {
 				this.checkCollision();
 				this.portraitSprites.showFrame(2);
-				this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
+				this.rotate(-this.rotationSpeed * f.Loop.timeFrameReal);
 			}
 		}
 
@@ -326,7 +326,7 @@ namespace doomClone {
 			if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
 				this.checkCollision();
 				this.portraitSprites.showFrame(0);
-				this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
+				this.rotate(this.rotationSpeed * f.Loop.timeFrameReal);
 			}
 		}
 
@@ -337,7 +337,7 @@ namespace doomClone {
 		private checkUpKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getUpKey())) {
 				this.checkCollision();
-				this.moveAmount = this.walkSpeed * f.Loop.timeFrameGame;
+				this.moveAmount = this.walkSpeed * f.Loop.timeFrameReal;
 				this.move(this.moveAmount);
 				this.checkSprintKey();
 				this.checkLeftKey();
@@ -356,7 +356,7 @@ namespace doomClone {
 		private checkDownKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getDownKey())) {
 				this.checkCollision();
-				this.moveAmount = -this.walkSpeed * f.Loop.timeFrameGame;
+				this.moveAmount = -this.walkSpeed * f.Loop.timeFrameReal;
 				this.move(this.moveAmount);
 				this.checkLeftKey();
 				this.checkRightKey();

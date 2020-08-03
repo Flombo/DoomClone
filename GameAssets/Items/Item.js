@@ -7,7 +7,7 @@ var doomClone;
             super(name);
             this.rotationSpeed = 50 / 1000;
             this.animateRotation = () => {
-                this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameGame);
+                this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameReal);
             };
             this.checkPlayerCollision = () => {
                 this.isColliding = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1);
