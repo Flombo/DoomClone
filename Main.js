@@ -8,6 +8,8 @@ var doomClone;
     function hndLoad(_event) {
         let canvas = document.getElementById("game");
         let portraitCanvas = document.getElementById("portraitCanvas");
+        let pistolCanvas = document.getElementById("playerPistolCanvas");
+        // let miniMapCanvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("minimap");
         let root = new f.Node("root");
         let groundNode = new doomClone.Ground();
         root.appendChild(groundNode);
@@ -16,10 +18,10 @@ var doomClone;
         let player = new doomClone.Player();
         root.appendChild(player);
         let enemies = [];
-        let enemy = new doomClone.Enemy(player, 12, 12);
+        let enemy = new doomClone.Enemy(player, -3, -3);
         root.appendChild(enemy);
         enemies.push(enemy);
-        let enemy1 = new doomClone.Enemy(player, -10, -10);
+        let enemy1 = new doomClone.Enemy(player, 10, 10);
         root.appendChild(enemy1);
         enemies.push(enemy1);
         let wall = new doomClone.Wall(player, enemies, 2, 4);
@@ -46,27 +48,27 @@ var doomClone;
         root.appendChild(wall9);
         root.appendChild(wall10);
         root.appendChild(wall11);
-        for (let y = 16; y >= 16; y--) {
+        for (let z = 16; z >= 16; z--) {
             for (let x = 17; x > -17; x--) {
-                let wallLeft = new doomClone.Wall(player, enemies, x, y);
+                let wallLeft = new doomClone.Wall(player, enemies, x, z);
                 root.appendChild(wallLeft);
             }
         }
-        for (let y = -16; y <= -16; y++) {
+        for (let z = -16; z <= -16; z++) {
             for (let x = 17; x > -17; x--) {
-                let wallRight = new doomClone.Wall(player, enemies, x, y);
+                let wallRight = new doomClone.Wall(player, enemies, x, z);
                 root.appendChild(wallRight);
             }
         }
         for (let x = 17; x >= 17; x--) {
-            for (let y = 16; y > -16; y--) {
-                let wallTop = new doomClone.Wall(player, enemies, x, y);
+            for (let z = 16; z > -16; z--) {
+                let wallTop = new doomClone.Wall(player, enemies, x, z);
                 root.appendChild(wallTop);
             }
         }
         for (let x = -13; x <= -13; x++) {
-            for (let y = 16; y > -16; y--) {
-                let wallBottom = new doomClone.Wall(player, enemies, x, y);
+            for (let z = 16; z > -16; z--) {
+                let wallBottom = new doomClone.Wall(player, enemies, x, z);
                 root.appendChild(wallBottom);
             }
         }
@@ -78,33 +80,32 @@ var doomClone;
         root.appendChild(ammoKit);
         let door = new doomClone.Door(player, enemies, 2, 2.5);
         root.appendChild(door);
-        // let light : f.LightAmbient = new f.LightAmbient(new f.Color(1, 1, 0.5, 0.1));
-        // let directionalLight : f.LightDirectional = new f.LightDirectional(f.Color.CSS('white'));
-        // let directionalLightComp : f.ComponentLight = new f.ComponentLight(directionalLight);
-        // directionalLightComp.pivot.translateZ(10);
-        // directionalLightComp.pivot.lookAt(player.mtxLocal.translation);
-        // let lightComponent : f.ComponentLight = new f.ComponentLight(light);
-        // let lightNode : f.Node = new f.Node("light");
-        // lightNode.addComponent(lightComponent);
-        // lightNode.addComponent(directionalLightComp);
-        // root.appendChild(lightNode);
-        let gameMenuManager = new doomClone.GameMenuManager(canvas);
+        let gameMenuManager = new doomClone.GameMenuManager(canvas, enemies, player);
         gameMenuManager.initGameMenuHandling();
         let viewport = new f.Viewport();
         viewport.initialize("Game", root, player.getEgoCamera(), canvas);
         let viewportPortrait = new f.Viewport();
         viewportPortrait.initialize("Portrait", player.getPortraitSprites(), player.getPortraitCamera(), portraitCanvas);
+        let viewportPistol = new f.Viewport();
+        viewportPistol.initialize("Pistol", player.getPistolSprites(), player.getPistolCamera(), pistolCanvas);
+        // let viewportMiniMap : f.Viewport = new f.Viewport();
+        // let miniMapCam : f.ComponentCamera = new f.ComponentCamera();
+        // miniMapCam.pivot.rotateY(180);
+        // miniMapCam.pivot.translateZ(-35);
+        // viewportMiniMap.initialize("Minimap", root, miniMapCam, miniMapCanvas);
         f.AudioManager.default.listenTo(root);
         f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
         f.Loop.addEventListener("loopFrame", renderLoop);
-        f.Loop.start(f.LOOP_MODE.TIME_GAME, 30);
+        f.Loop.start(f.LOOP_MODE.TIME_REAL, 60);
         function renderLoop() {
             if (!gameMenuManager.getIsPaused()) {
                 if (!player.getIsDead()) {
                     f.AudioManager.default.update();
                     viewportPortrait.draw();
+                    viewportPistol.draw();
+                    console.log(f.Loop.getFpsRealAverage(), "fps");
+                    // viewportMiniMap.draw();
                     viewport.draw();
-                    console.log(f.Loop.getFpsRealAverage());
                 }
                 else {
                     gameMenuManager.showDeadMenu();

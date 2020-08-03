@@ -8,9 +8,27 @@ var doomClone;
         MenuURLS["DEATHMENU"] = "/Menus/DeathMenu.html";
     })(MenuURLS || (MenuURLS = {}));
     class GameMenuManager {
-        constructor(gameCanvas) {
+        constructor(gameCanvas, enemies, player) {
+            this.checkIfAllEnemiesAreDead = () => {
+                if (this.enemies.length > 0) {
+                    this.enemies.forEach(enemy => {
+                        if (!enemy.getIsAlive()) {
+                            this.enemiesKilled++;
+                            let index = this.enemies.indexOf(enemy);
+                            this.enemies.splice(index, 1);
+                        }
+                    });
+                }
+                else {
+                    this.showWinMenu();
+                }
+            };
+            this.startTime = Date.now();
+            this.enemiesKilled = 0;
             this.isPaused = false;
             this.gameCanvas = gameCanvas;
+            this.enemies = enemies;
+            this.player = player;
             this.HUD = document.getElementsByTagName("header")[0];
             this.pauseMenu = document.getElementById("pauseMenu");
             this.resumeButton = document.getElementById("resumeGameButton");
@@ -31,15 +49,24 @@ var doomClone;
                     }
                 }
             });
+            f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.checkIfAllEnemiesAreDead);
         }
         getIsPaused() {
             return this.isPaused;
         }
         showWinMenu() {
+            this.saveParameters();
             doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
         }
         showDeadMenu() {
+            this.saveParameters();
             doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
+        }
+        saveParameters() {
+            let timeTaken = Date.now() - this.startTime;
+            localStorage.setItem('HEALTH', this.player.getHealth().toString());
+            localStorage.setItem('ENEMIES', this.enemiesKilled.toString());
+            localStorage.setItem("TIME", (Math.floor(timeTaken / 1000)).toString());
         }
         static setURLToMenuURL(newURL) {
             if (newURL !== null) {

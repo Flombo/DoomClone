@@ -6,8 +6,8 @@ namespace doomClone {
 
         private ammoAmount : number = 10;
 
-        constructor(player : Player, x : number, y : number) {
-            super(player, "Ammo", x, y, <HTMLImageElement>document.getElementById("ammo"));
+        constructor(player : Player, x : number, z : number) {
+            super(player, "Ammo", x, z, <HTMLImageElement>document.getElementById("ammo"));
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCollision);
         }
 

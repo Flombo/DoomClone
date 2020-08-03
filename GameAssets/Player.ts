@@ -4,8 +4,8 @@ namespace doomClone {
 	import fAid = FudgeAid;
 
 	enum speedTypes {
-		'WALK' = 10 / 1000,
-		'ROTATION' = speedTypes.WALK * 5,
+		'WALK' = 50 / 1000,
+		'ROTATION' = speedTypes.WALK * 3,
 		'SPRINT' = speedTypes.WALK * 2
 	}
 
@@ -14,14 +14,15 @@ namespace doomClone {
 		private isDead : boolean;
 		private egoCamera : f.ComponentCamera;
 		private portraitCamera : f.ComponentCamera;
+		private pistolCamera : f.ComponentCamera;
 		private portraitSprites : fAid.NodeSprite;
 		private pistolSprites : fAid.NodeSprite;
 		private health : number;
 		private ammo : number;
 		private armor : number;
-		private currentBullets : Bullet[];
+		private currentBullets : PlayerBullet[];
 		private stamina : number;
-		private walkSpeed : number = speedTypes.WALK;
+		public walkSpeed : number = speedTypes.WALK;
 		private rotationSpeed : number = speedTypes.ROTATION;
 		private keyMap : Map<string, boolean>;
 		private healthBar : HTMLProgressElement;
@@ -30,31 +31,26 @@ namespace doomClone {
 		private armorBar : HTMLElement;
 		private readonly playerCollisionEvent : CustomEvent;
 		private readonly playerInteractionEvent : CustomEvent;
-		private isAllowedToMove : boolean;
 		private componentAudio : f.ComponentAudio;
 		private magazineEmptySound : f.Audio;
 		private pickUpSound : f.Audio;
 		private playerAttackedSound : f.Audio;
 		private pistolSound : f.Audio;
 		private playerDyingSound : f.Audio;
-		private shotCollisionRadius : number = 0.9;
 		private controlsLoader : ControlsLoader;
+		public moveAmount : number;
 
 		constructor() {
 			super("Player");
-			this.isAllowedToMove = true;
 			this.controlsLoader = new ControlsLoader();
 			this.keyMap = new Map<string, boolean>();
 			this.playerCollisionEvent = new CustomEvent<any>("playerCollision");
 			this.playerInteractionEvent = new CustomEvent<any>("playerInteraction");
 			this.initPlayer();
 			this.initEgoCamera();
+			this.initPistolCamera();
 			this.initPortraitCamera();
 			this.initKeyHandlers();
-		}
-
-		public setIsAllowedToMove(isAllowedToMove : boolean) : void {
-			this.isAllowedToMove = isAllowedToMove;
 		}
 
 		public getPortraitSprites() : fAid.NodeSprite {
@@ -65,20 +61,33 @@ namespace doomClone {
 			return this.egoCamera;
 		}
 
+		public getPistolCamera() : f.ComponentCamera {
+			return this.pistolCamera;
+		}
+
 		public getPortraitCamera() : f.ComponentCamera {
 			return this.portraitCamera;
 		}
 
-		public getCurrentBullets() : Bullet[] {
+		public getCurrentBullets() : PlayerBullet[] {
 			return this.currentBullets;
 		}
 
+		public getPistolSprites() : fAid.NodeSprite {
+			return this.pistolSprites;
+		}
+
 		//deletes bullet and removes his event-listener
-		public deleteCertainBullet(bullet : Bullet) : void {
+		public deleteCertainBullet(bullet : PlayerBullet) : void {
 			let index : number = this.currentBullets.indexOf(bullet);
 			this.currentBullets.splice(index, 1);
 			bullet.removeEventListener();
-			this.getParent().removeChild(bullet);
+			new f.Timer(f.Time.game, 500, 1, () => {
+				if(this.getParent() !== null) {
+					this.getParent().removeChild(bullet);
+				}
+			});
+			console.log(this.currentBullets.length)
 		}
 
 		public setHealth(health : number) : void {
@@ -91,6 +100,7 @@ namespace doomClone {
 					this.health += (health / (this.armor / 100));
 				}
 			} else {
+				this.health = 0;
 				this.setIsDeadTrue();
 			}
 			this.healthBar.value = this.health;
@@ -142,6 +152,8 @@ namespace doomClone {
 			this.ammoBar = <HTMLElement>document.getElementById("ammoPanel");
 			this.armorBar = <HTMLElement>document.getElementById("armorPanel");
 			this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0,0,0))));
+			this.mtxLocal.rotateY(-90);
+			this.mtxLocal.rotateZ(-90);
 			this.loadPortraitSprites();
 			this.loadSprites();
 			this.initSounds();
@@ -166,19 +178,12 @@ namespace doomClone {
 		}
 
 		private becomeDamaged(bullet : EnemyBullet, enemy : Enemy) : void {
-			if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+			if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
 				bullet.playExplosionAnimation();
 				enemy.deleteCertainBullet(bullet);
 				this.playPlayerAttackedSound();
 				this.setHealth(-bullet.getDamage());
 			}
-		}
-
-		private calculateDistance(node : f.Node) : number {
-			let wallTranslationCopy = this.mtxLocal.translation.copy;
-			let nodeTranslationCopy = node.mtxLocal.translation.copy;
-			wallTranslationCopy.subtract(nodeTranslationCopy);
-			return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
 		}
 
 		private async initSounds() : Promise<void> {
@@ -221,15 +226,13 @@ namespace doomClone {
 			this.pistolSprites.setFrameDirection(0);
 			this.pistolSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(
 				this.mtxLocal.translation.x,
-				this.mtxLocal.translation.y + 1.8,
-				this.mtxLocal.translation.z - 0.25
+				this.mtxLocal.translation.y - 0.25,
+				this.mtxLocal.translation.z + 1.8
 				)
 			)));
-			this.pistolSprites.mtxLocal.rotateX(90);
 			this.pistolSprites.mtxLocal.scale(f.Vector3.ONE(0.5));
 			this.pistolSprites.showFrame(0);
 			this.pistolSprites.setFrameDirection(0);
-			this.appendChild(this.pistolSprites);
 		}
 
 		//inits portraitCamera for face HUD
@@ -242,12 +245,16 @@ namespace doomClone {
 		private initEgoCamera() : void {
 			this.egoCamera = new f.ComponentCamera();
 			this.egoCamera.backgroundColor = f.Color.CSS('salmon');
-			this.egoCamera.pivot.rotateY(90);
-			this.egoCamera.pivot.rotateZ(90);
-			this.egoCamera.pivot.rotateY(90);
 			this.egoCamera.pivot.translateZ(-1);
 			this.egoCamera.pivot.translateY(-0.1);
 			this.addComponent(this.egoCamera);
+		}
+
+		private initPistolCamera() : void {
+			this.pistolCamera = new f.ComponentCamera();
+			this.pistolCamera.backgroundColor = f.Color.CSS('none', 0)
+			this.pistolCamera.pivot.translateZ(-1);
+			this.pistolCamera.pivot.translateY(-0.1);
 		}
 
 		private checkCollision() : void {
@@ -309,6 +316,7 @@ namespace doomClone {
 
 		private checkRightKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getRightKey())) {
+				this.checkCollision();
 				this.portraitSprites.showFrame(2);
 				this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
 			}
@@ -316,6 +324,7 @@ namespace doomClone {
 
 		private checkLeftKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
+				this.checkCollision();
 				this.portraitSprites.showFrame(0);
 				this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
 			}
@@ -328,13 +337,11 @@ namespace doomClone {
 		private checkUpKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getUpKey())) {
 				this.checkCollision();
-				if(this.isAllowedToMove) {
-					this.move(this.walkSpeed * f.Loop.timeFrameGame);
-					this.checkSprintKey();
-				} else {
-					this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
-					this.isAllowedToMove = true;
-				}
+				this.moveAmount = this.walkSpeed * f.Loop.timeFrameGame;
+				this.move(this.moveAmount);
+				this.checkSprintKey();
+				this.checkLeftKey();
+				this.checkRightKey();
 				this.portraitSprites.showFrame(1);
 				this.pistolSprites.setFrameDirection(1);
 			}
@@ -349,9 +356,11 @@ namespace doomClone {
 		private checkDownKey() : void {
 			if (this.keyMap.get(this.controlsLoader.getDownKey())) {
 				this.checkCollision();
-				if(this.isAllowedToMove) {
-					this.move(-this.walkSpeed * f.Loop.timeFrameGame);
-				}
+				this.moveAmount = -this.walkSpeed * f.Loop.timeFrameGame;
+				this.move(this.moveAmount);
+				this.checkLeftKey();
+				this.checkRightKey();
+				this.portraitSprites.showFrame(1);
 				this.pistolSprites.setFrameDirection(1);
 			}
 		}
@@ -379,11 +388,11 @@ namespace doomClone {
 		}
 
 		private rotate(amount : number) : void {
-			this.mtxLocal.rotateZ(amount);
+			this.mtxLocal.rotateY(amount);
 		}
 
 		private move(amount : number) : void {
-			this.mtxLocal.translateY(amount);
+			this.mtxLocal.translateZ(amount);
 		}
 
 		private interact() : void {
@@ -392,7 +401,7 @@ namespace doomClone {
 
 		private shoot() : void {
 			if(this.ammo > 0) {
-				let bullet: Bullet = new Bullet(this.mtxLocal);
+				let bullet: PlayerBullet = new PlayerBullet(this.mtxLocal);
 				this.getParent().appendChild(bullet);
 				this.currentBullets.push(bullet);
 				this.setAmmo(-1);

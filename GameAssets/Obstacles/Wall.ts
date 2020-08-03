@@ -1,26 +1,29 @@
 namespace doomClone {
 
+    import f = FudgeCore;
+
     export class Wall extends Obstacle {
 
-        constructor(player: Player, enemies : Enemy[], x: number, y: number) {
-            super(player, enemies, x, y, "Wall", <HTMLImageElement>document.getElementById("wall"));
+        constructor(player: Player, enemies : Enemy[], x: number, z: number) {
+            super(player, enemies, x, z, "Wall", <HTMLImageElement>document.getElementById("wall"));
             this.player = player;
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision() }, true);
             this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision() }, true);
         }
 
         private checkPlayerCollision() : void {
-            let distance = this.calculateDistance(this.player);
-            if(distance <= this.playerCollisionRadius){
-                this.player.setIsAllowedToMove(false);
+            if(this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)){
+                this.player.mtxLocal.translateZ(-this.player.moveAmount);
             }
         }
 
         private checkEnemyCollision() : void {
             Array.from(this.enemies).forEach(enemy => {
-                let distance = this.calculateDistance(enemy);
-                if(distance <= this.enemyCollisionRadius) {
-                    enemy.setCurrentState('avoid');
+                if(enemy.getAhead().isInsideSphere(this.mtxLocal.translation, 1)) {
+                    let avoidanceForce : f.Vector3 = enemy.getAhead().copy;
+                    avoidanceForce.subtract(this.mtxLocal.translation.copy);
+                    enemy.mtxLocal.translateZ((enemy.getSpeed()) + avoidanceForce.z);
+                    enemy.mtxLocal.translateX((enemy.getSpeed()) + avoidanceForce.x);
                 }
             });
         }

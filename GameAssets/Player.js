@@ -5,28 +5,24 @@ var doomClone;
     var fAid = FudgeAid;
     let speedTypes;
     (function (speedTypes) {
-        speedTypes[speedTypes["WALK"] = 0.01] = "WALK";
-        speedTypes[speedTypes["ROTATION"] = 0.05] = "ROTATION";
-        speedTypes[speedTypes["SPRINT"] = 0.02] = "SPRINT";
+        speedTypes[speedTypes["WALK"] = 0.05] = "WALK";
+        speedTypes[speedTypes["ROTATION"] = 0.15000000000000002] = "ROTATION";
+        speedTypes[speedTypes["SPRINT"] = 0.1] = "SPRINT";
     })(speedTypes || (speedTypes = {}));
     class Player extends f.Node {
         constructor() {
             super("Player");
             this.walkSpeed = speedTypes.WALK;
             this.rotationSpeed = speedTypes.ROTATION;
-            this.shotCollisionRadius = 0.9;
-            this.isAllowedToMove = true;
             this.controlsLoader = new doomClone.ControlsLoader();
             this.keyMap = new Map();
             this.playerCollisionEvent = new CustomEvent("playerCollision");
             this.playerInteractionEvent = new CustomEvent("playerInteraction");
             this.initPlayer();
             this.initEgoCamera();
+            this.initPistolCamera();
             this.initPortraitCamera();
             this.initKeyHandlers();
-        }
-        setIsAllowedToMove(isAllowedToMove) {
-            this.isAllowedToMove = isAllowedToMove;
         }
         getPortraitSprites() {
             return this.portraitSprites;
@@ -34,18 +30,29 @@ var doomClone;
         getEgoCamera() {
             return this.egoCamera;
         }
+        getPistolCamera() {
+            return this.pistolCamera;
+        }
         getPortraitCamera() {
             return this.portraitCamera;
         }
         getCurrentBullets() {
             return this.currentBullets;
         }
+        getPistolSprites() {
+            return this.pistolSprites;
+        }
         //deletes bullet and removes his event-listener
         deleteCertainBullet(bullet) {
             let index = this.currentBullets.indexOf(bullet);
             this.currentBullets.splice(index, 1);
             bullet.removeEventListener();
-            this.getParent().removeChild(bullet);
+            new f.Timer(f.Time.game, 500, 1, () => {
+                if (this.getParent() !== null) {
+                    this.getParent().removeChild(bullet);
+                }
+            });
+            console.log(this.currentBullets.length);
         }
         setHealth(health) {
             if (this.health + health > 0) {
@@ -59,6 +66,7 @@ var doomClone;
                 }
             }
             else {
+                this.health = 0;
                 this.setIsDeadTrue();
             }
             this.healthBar.value = this.health;
@@ -103,6 +111,8 @@ var doomClone;
             this.ammoBar = document.getElementById("ammoPanel");
             this.armorBar = document.getElementById("armorPanel");
             this.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
+            this.mtxLocal.rotateY(-90);
+            this.mtxLocal.rotateZ(-90);
             this.loadPortraitSprites();
             this.loadSprites();
             this.initSounds();
@@ -126,18 +136,12 @@ var doomClone;
             }
         }
         becomeDamaged(bullet, enemy) {
-            if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+            if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
                 bullet.playExplosionAnimation();
                 enemy.deleteCertainBullet(bullet);
                 this.playPlayerAttackedSound();
                 this.setHealth(-bullet.getDamage());
             }
-        }
-        calculateDistance(node) {
-            let wallTranslationCopy = this.mtxLocal.translation.copy;
-            let nodeTranslationCopy = node.mtxLocal.translation.copy;
-            wallTranslationCopy.subtract(nodeTranslationCopy);
-            return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
         }
         async initSounds() {
             this.pistolSound = await f.Audio.load("../../sounds/pistol.wav");
@@ -175,12 +179,10 @@ var doomClone;
             this.pistolSprites.framerate = 5;
             this.pistolSprites.showFrame(1);
             this.pistolSprites.setFrameDirection(0);
-            this.pistolSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(this.mtxLocal.translation.x, this.mtxLocal.translation.y + 1.8, this.mtxLocal.translation.z - 0.25))));
-            this.pistolSprites.mtxLocal.rotateX(90);
+            this.pistolSprites.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(this.mtxLocal.translation.x, this.mtxLocal.translation.y - 0.25, this.mtxLocal.translation.z + 1.8))));
             this.pistolSprites.mtxLocal.scale(f.Vector3.ONE(0.5));
             this.pistolSprites.showFrame(0);
             this.pistolSprites.setFrameDirection(0);
-            this.appendChild(this.pistolSprites);
         }
         //inits portraitCamera for face HUD
         initPortraitCamera() {
@@ -191,12 +193,15 @@ var doomClone;
         initEgoCamera() {
             this.egoCamera = new f.ComponentCamera();
             this.egoCamera.backgroundColor = f.Color.CSS('salmon');
-            this.egoCamera.pivot.rotateY(90);
-            this.egoCamera.pivot.rotateZ(90);
-            this.egoCamera.pivot.rotateY(90);
             this.egoCamera.pivot.translateZ(-1);
             this.egoCamera.pivot.translateY(-0.1);
             this.addComponent(this.egoCamera);
+        }
+        initPistolCamera() {
+            this.pistolCamera = new f.ComponentCamera();
+            this.pistolCamera.backgroundColor = f.Color.CSS('none', 0);
+            this.pistolCamera.pivot.translateZ(-1);
+            this.pistolCamera.pivot.translateY(-0.1);
         }
         checkCollision() {
             this.getParent().broadcastEvent(this.playerCollisionEvent);
@@ -251,12 +256,14 @@ var doomClone;
         }
         checkRightKey() {
             if (this.keyMap.get(this.controlsLoader.getRightKey())) {
+                this.checkCollision();
                 this.portraitSprites.showFrame(2);
                 this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
         checkLeftKey() {
             if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
+                this.checkCollision();
                 this.portraitSprites.showFrame(0);
                 this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
             }
@@ -268,14 +275,11 @@ var doomClone;
         checkUpKey() {
             if (this.keyMap.get(this.controlsLoader.getUpKey())) {
                 this.checkCollision();
-                if (this.isAllowedToMove) {
-                    this.move(this.walkSpeed * f.Loop.timeFrameGame);
-                    this.checkSprintKey();
-                }
-                else {
-                    this.move(-(this.walkSpeed * 2) * f.Loop.timeFrameGame);
-                    this.isAllowedToMove = true;
-                }
+                this.moveAmount = this.walkSpeed * f.Loop.timeFrameGame;
+                this.move(this.moveAmount);
+                this.checkSprintKey();
+                this.checkLeftKey();
+                this.checkRightKey();
                 this.portraitSprites.showFrame(1);
                 this.pistolSprites.setFrameDirection(1);
             }
@@ -288,9 +292,11 @@ var doomClone;
         checkDownKey() {
             if (this.keyMap.get(this.controlsLoader.getDownKey())) {
                 this.checkCollision();
-                if (this.isAllowedToMove) {
-                    this.move(-this.walkSpeed * f.Loop.timeFrameGame);
-                }
+                this.moveAmount = -this.walkSpeed * f.Loop.timeFrameGame;
+                this.move(this.moveAmount);
+                this.checkLeftKey();
+                this.checkRightKey();
+                this.portraitSprites.showFrame(1);
                 this.pistolSprites.setFrameDirection(1);
             }
         }
@@ -316,17 +322,17 @@ var doomClone;
             }
         }
         rotate(amount) {
-            this.mtxLocal.rotateZ(amount);
+            this.mtxLocal.rotateY(amount);
         }
         move(amount) {
-            this.mtxLocal.translateY(amount);
+            this.mtxLocal.translateZ(amount);
         }
         interact() {
             this.getParent().broadcastEvent(this.playerInteractionEvent);
         }
         shoot() {
             if (this.ammo > 0) {
-                let bullet = new doomClone.Bullet(this.mtxLocal);
+                let bullet = new doomClone.PlayerBullet(this.mtxLocal);
                 this.getParent().appendChild(bullet);
                 this.currentBullets.push(bullet);
                 this.setAmmo(-1);

@@ -3,8 +3,8 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     class ArmorKit extends doomClone.Item {
-        constructor(player, x, y) {
-            super(player, "Armor", x, y, document.getElementById("armor"));
+        constructor(player, x, z) {
+            super(player, "Armor", x, z, document.getElementById("armor"));
             this.armorAmount = 10;
             this.checkCollision = () => {
                 if (this.isColliding) {

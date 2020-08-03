@@ -3,27 +3,28 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     class Obstacle extends f.Node {
-        constructor(player, enemies, x, y, name, img) {
+        constructor(player, enemies, x, z, name, img) {
             super(name);
-            this.playerCollisionRadius = 1;
-            this.enemyCollisionRadius = 1;
-            this.shotCollisionRadius = 1;
             this.player = player;
             this.img = img;
             this.enemies = enemies;
-            this.init(x, y);
+            this.init(x, z);
         }
-        init(x, y) {
+        init(x, z) {
             let componentMesh = new f.ComponentMesh(new f.MeshCube());
-            componentMesh.pivot.scaleZ(3);
             let textureImage = new f.TextureImage();
             textureImage.image = this.img;
             let coatTextured = new f.CoatTextured();
             coatTextured.texture = textureImage;
             let material = new f.Material("ObstacleMaterial", f.ShaderTexture, coatTextured);
             let componentMaterial = new f.ComponentMaterial(material);
-            let componentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
+            let componentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
             this.addComponent(componentTransform);
+            this.mtxLocal.rotateY(-90);
+            this.mtxLocal.rotateZ(-90);
+            this.mtxLocal.translateZ(z);
+            this.mtxLocal.translateX(x);
+            componentMesh.pivot.scaleY(3);
             this.addComponent(componentMesh);
             this.addComponent(componentMaterial);
             this.addEventListener("shotCollision", () => { this.checkShotCollision(); }, true);
@@ -33,11 +34,13 @@ var doomClone;
             let projectiles = this.player.getCurrentBullets();
             projectiles.forEach(bullet => {
                 if (bullet.getRange() > 0) {
-                    if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+                    if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                        bullet.playExplosionAnimation();
                         this.player.deleteCertainBullet(bullet);
                     }
                 }
                 else {
+                    bullet.playExplosionAnimation();
                     this.player.deleteCertainBullet(bullet);
                 }
             });
@@ -47,7 +50,7 @@ var doomClone;
                 let projectiles = enemy.getBullets();
                 projectiles.forEach(bullet => {
                     if (bullet.getRange() > 0) {
-                        if (this.calculateDistance(bullet) <= this.shotCollisionRadius) {
+                        if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
                             bullet.playExplosionAnimation();
                             enemy.deleteCertainBullet(bullet);
                         }
@@ -58,12 +61,6 @@ var doomClone;
                     }
                 });
             });
-        }
-        calculateDistance(node) {
-            let wallTranslationCopy = this.mtxLocal.translation.copy;
-            let nodeTranslationCopy = node.mtxLocal.translation.copy;
-            wallTranslationCopy.subtract(nodeTranslationCopy);
-            return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
         }
     }
     doomClone.Obstacle = Obstacle;

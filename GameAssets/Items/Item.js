@@ -3,21 +3,19 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     class Item extends f.Node {
-        constructor(player, name, x, y, img) {
+        constructor(player, name, x, z, img) {
             super(name);
-            this.playerCollisionRadius = 0.9;
             this.rotationSpeed = 50 / 1000;
             this.animateRotation = () => {
-                this.mtxLocal.rotateZ(this.rotationSpeed * f.Loop.timeFrameGame);
+                this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameGame);
             };
             this.checkPlayerCollision = () => {
-                let distance = this.calculateDistance(this.player);
-                this.isColliding = distance <= this.playerCollisionRadius;
+                this.isColliding = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1);
             };
             this.player = player;
-            this.init(x, y, img);
+            this.init(x, z, img);
         }
-        init(x, y, img) {
+        init(x, z, img) {
             let componentMesh = new f.ComponentMesh(new f.MeshCube());
             componentMesh.pivot.scaleZ(0.25);
             componentMesh.pivot.scaleX(0.25);
@@ -28,19 +26,17 @@ var doomClone;
             coatTextured.texture = textureImage;
             let material = new f.Material("Health", f.ShaderTexture, coatTextured);
             let componentMaterial = new f.ComponentMaterial(material);
-            let componentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
+            let componentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
             this.addComponent(componentTransform);
+            this.mtxLocal.rotateY(-90);
+            this.mtxLocal.rotateZ(-90);
             this.addComponent(componentMesh);
             this.addComponent(componentMaterial);
-            this.mtxLocal.translateZ(-0.5);
+            this.mtxLocal.translateY(-0.5);
+            this.mtxLocal.translateX(x);
+            this.mtxLocal.translateZ(z);
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision(); }, true);
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.animateRotation);
-        }
-        calculateDistance(node) {
-            let healthTranslationCopy = this.mtxLocal.translation.copy;
-            let nodeTranslationCopy = node.mtxLocal.translation.copy;
-            healthTranslationCopy.subtract(nodeTranslationCopy);
-            return Math.sqrt(Math.pow(healthTranslationCopy.x, 2) + Math.pow(healthTranslationCopy.y, 2));
         }
         removeSelf() {
             this.removeEventListener("playerCollision", this.checkPlayerCollision);

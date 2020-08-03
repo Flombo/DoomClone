@@ -17,11 +17,13 @@ namespace doomClone {
         private activeButton : HTMLButtonElement;
         private defaultButton : HTMLButtonElement;
         private saveButton : HTMLButtonElement;
+        private saveMessage : HTMLDivElement;
 
         constructor() {
             this.activeButton = null;
             this.defaultButton = <HTMLButtonElement>document.getElementById("defaultButton");
             this.saveButton = <HTMLButtonElement>document.getElementById("saveControlsButton");
+            this.saveMessage = <HTMLDivElement>document.getElementById("saveMessage");
             this.loadControlConfig();
             this.initHandling()
         }
@@ -85,7 +87,7 @@ namespace doomClone {
             });
 
             this.saveButton.addEventListener("mousedown", () => {
-               this .saveButtonLayout(buttonArray);
+               this.saveButtonLayout(buttonArray);
             });
         }
 
@@ -94,32 +96,37 @@ namespace doomClone {
             buttons.forEach(button => {
                 switch (button.id) {
                     case 'upButton':
-                        doomClone.ControlMenuManager.saveKey('UP', button.innerText);
+                        this.saveKey('UP', button.innerText);
                         break;
                     case 'downButton':
-                        doomClone.ControlMenuManager.saveKey('DOWN', button.innerText);
+                        this.saveKey('DOWN', button.innerText);
                         break;
                     case 'leftButton':
-                        doomClone.ControlMenuManager.saveKey('LEFT', button.innerText);
+                        this.saveKey('LEFT', button.innerText);
                         break;
                     case 'rightButton':
-                        doomClone.ControlMenuManager.saveKey('RIGHT', button.innerText);
+                        this.saveKey('RIGHT', button.innerText);
                         break;
                     case 'sprintButton':
-                        doomClone.ControlMenuManager.saveKey('SPRINT', button.innerText);
+                        this.saveKey('SPRINT', button.innerText);
                         break;
                     case 'shootButton':
-                        doomClone.ControlMenuManager.saveKey('SHOOT', button.innerText);
+                        this.saveKey('SHOOT', button.innerText);
                         break;
                     case 'interactButton':
-                        doomClone.ControlMenuManager.saveKey('INTERACT', button.innerText);
+                        this.saveKey('INTERACT', button.innerText);
                         break;
                 }
             });
         }
 
-        private static saveKey(keyString : string, valueString : string) : void {
+        private saveKey(keyString : string, valueString : string) : void {
             localStorage.setItem(keyString, valueString);
+            if (localStorage.getItem(keyString) !== null) {
+                this.saveMessage.innerText = "Successfully saved";
+            } else {
+                this.saveMessage.innerText = "There occured an error while saving";
+            }
         }
 
         private resetButtonLayout(buttons : HTMLButtonElement[]) : void {
@@ -152,8 +159,28 @@ namespace doomClone {
 
         private setKey(event : KeyboardEvent) : void {
             if(this.activeButton !== null){
-                this.activeButton.innerText = event.code;
+                let activeButtonCurrentBinding : string = this.activeButton.innerText;
+                if(!doomClone.ControlMenuManager.checkKeyBindings(event.code)){
+                    this.activeButton.innerText = event.code;
+                } else {
+                    this.saveMessage.innerText = `key "${event.code}" already in use`;
+                    this.activeButton.innerText = activeButtonCurrentBinding;
+                }
+                this.activeButton = null;
             }
+        }
+
+        private static checkKeyBindings(keyCode : string) : boolean {
+            let keyAlreadyUsed : boolean = false;
+            let buttonsArray = <HTMLButtonElement[]>Array.from(
+                document.getElementsByTagName("table")[0].getElementsByTagName("button")
+            );
+            for(let i : number = 0; i < buttonsArray.length; i++){
+                if(buttonsArray[i].innerText === keyCode){
+                    keyAlreadyUsed = true;
+                }
+            }
+            return keyAlreadyUsed;
         }
 
     }

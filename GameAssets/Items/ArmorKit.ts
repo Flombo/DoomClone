@@ -6,8 +6,8 @@ namespace doomClone {
 
         private armorAmount: number = 10;
 
-        constructor(player: Player, x: number, y: number) {
-            super(player, "Armor", x, y, <HTMLImageElement>document.getElementById("armor"));
+        constructor(player: Player, x: number, z: number) {
+            super(player, "Armor", x, z, <HTMLImageElement>document.getElementById("armor"));
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCollision);
         }
 

@@ -9,7 +9,8 @@
     <script src="../../FudgeCore/FudgeCore.js"></script>
     <script src="../../FudgeAid/FudgeAid.js"></script>
     <script src="../../Helper/ControlsLoader.js"></script>
-    <script src="../../GameAssets/Bullet.js"></script>
+    <script src="../../GameAssets/Projectiles.js"></script>
+    <script src="../../GameAssets/PlayerBullet.js"></script>
     <script src="../../GameAssets/EnemyBullet.js"></script>
     <script src="../../GameAssets/Obstacles/Obstacle.js"></script>
     <script src="../../GameAssets/Obstacles/Door.js"></script>
@@ -66,14 +67,18 @@
     </div>
 </div>
 <canvas id="game"></canvas>
+<canvas id="playerPistolCanvas" style="width: 100%; height: 100%"></canvas>
+<!--<canvas id="minimap" style="position: absolute; top: 0; left: 0; z-index: 9999999999;"></canvas>-->
+<!--<canvas id="pistolCanvas"></canvas>-->
+<div id="interactionPrompt" style="opacity: 0">
+</div>
 <img id="portrait" src="../../spritesheets/Player/faceSprites.png">
 <img id="cacodemonIdle" src="../../spritesheets/Enemy/cacodemonIdle.png">
 <img id="cacodemonHit" src="../../spritesheets/Enemy/cacodemonHit.png">
 <img id="cacodemonShoot" src="../../spritesheets/Enemy/cacodemonShoot.png">
 <img id="cacodemonDeath" src="../../spritesheets/Enemy/cacodemonDeath.png">
 <img id="projectile" src="../../spritesheets/Enemy/EnemyProjectile.png">
-<img id="enemyProjectileExplosion" src="../../spritesheets/Enemy/EnemyProjectileExplosion.png">
-<img id="playerProjectileExplosion" src="../../spritesheets/Player/projectileExplosion.png">
+<img id="projectileExplosion" src="../../spritesheets/Enemy/EnemyProjectileExplosion.png">
 <img id="ground" src="../../spritesheets/Surfaces/groundTexture.png">
 <img id="roof" src="../../spritesheets/Surfaces/roofTexture.png">
 <img id="pistol" src="../../spritesheets/Player/pistol.png">

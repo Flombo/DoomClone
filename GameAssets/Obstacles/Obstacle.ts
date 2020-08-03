@@ -6,22 +6,18 @@ namespace doomClone {
 
         protected player : Player;
         protected enemies : Enemy[];
-        protected playerCollisionRadius : number = 1;
-        protected enemyCollisionRadius : number = 1;
-        private shotCollisionRadius : number = 1;
         private img : HTMLImageElement;
 
-        constructor(player : Player, enemies : Enemy[], x : number, y : number, name : string, img : HTMLImageElement) {
+        constructor(player : Player, enemies : Enemy[], x : number, z : number, name : string, img : HTMLImageElement) {
             super(name);
             this.player = player;
             this.img = img;
             this.enemies = enemies;
-            this.init(x, y);
+            this.init(x, z);
         }
 
-        private init(x : number, y : number) : void {
+        private init(x : number, z: number) : void {
             let componentMesh: f.ComponentMesh = new f.ComponentMesh(new f.MeshCube());
-            componentMesh.pivot.scaleZ(3);
             let textureImage: f.TextureImage = new f.TextureImage();
             textureImage.image = this.img;
             let coatTextured: f.CoatTextured = new f.CoatTextured();
@@ -29,8 +25,13 @@ namespace doomClone {
             let material: f.Material = new f.Material("ObstacleMaterial", f.ShaderTexture, coatTextured);
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(material);
             let componentTransform: f.ComponentTransform = new f.ComponentTransform(
-                f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)))
+                f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
             this.addComponent(componentTransform);
+            this.mtxLocal.rotateY(-90);
+            this.mtxLocal.rotateZ(-90);
+            this.mtxLocal.translateZ(z);
+            this.mtxLocal.translateX(x);
+            componentMesh.pivot.scaleY(3);
             this.addComponent(componentMesh);
             this.addComponent(componentMaterial);
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
@@ -38,13 +39,15 @@ namespace doomClone {
         }
 
         private checkShotCollision() : void {
-            let projectiles : Bullet[] = this.player.getCurrentBullets();
+            let projectiles : PlayerBullet[] = this.player.getCurrentBullets();
             projectiles.forEach(bullet => {
                 if(bullet.getRange() > 0) {
-                    if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
+                    if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                        bullet.playExplosionAnimation();
                         this.player.deleteCertainBullet(bullet);
                     }
                 } else {
+                    bullet.playExplosionAnimation();
                     this.player.deleteCertainBullet(bullet);
                 }
             });
@@ -55,7 +58,7 @@ namespace doomClone {
                 let projectiles : EnemyBullet[] = enemy.getBullets();
                 projectiles.forEach(bullet => {
                     if(bullet.getRange() > 0) {
-                        if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
+                        if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
                             bullet.playExplosionAnimation();
                             enemy.deleteCertainBullet(bullet);
                         }
@@ -65,13 +68,6 @@ namespace doomClone {
                     }
                 });
             });
-        }
-
-        protected calculateDistance(node : f.Node) : number {
-            let wallTranslationCopy = this.mtxLocal.translation.copy;
-            let nodeTranslationCopy = node.mtxLocal.translation.copy;
-            wallTranslationCopy.subtract(nodeTranslationCopy);
-            return Math.sqrt(Math.pow(wallTranslationCopy.x, 2) + Math.pow(wallTranslationCopy.y, 2));
         }
 
     }

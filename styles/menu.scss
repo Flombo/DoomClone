@@ -73,6 +73,7 @@ html{
           background-color: lavender;
           border: none;
           font-size: 20px;
+          width: 150px;
 
           &:focus {
             animation-name: blink;
@@ -85,7 +86,6 @@ html{
       }
 
       .buttonContainer {
-        margin-top: 5%;
 
         button {
           background-image: url("../spritesheets/HUDBG.png");

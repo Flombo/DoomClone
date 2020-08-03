@@ -5,10 +5,9 @@ namespace doomClone {
 
     export class Enemy extends f.Node{
 
-        private aggroRadius : number = 18;
-        private attackRadius : number = 12;
-        private flightRadius : number = 8;
-        private shotCollisionRadius : number = 1.5;
+        private aggroRadius : number = 10;
+        private attackRadius : number = 5;
+        private flightRadius : number = 2;
         private speed : number = 5 / 1000;
         private readonly player : Player;
         private health : number = 20;
@@ -25,8 +24,9 @@ namespace doomClone {
         private currentState : string;
         private attackTimer : f.Timer
         private isAlive : boolean;
+        private ahead : f.Vector3;
 
-        constructor(player : Player, x : number, y : number) {
+        constructor(player : Player, x : number, z : number) {
             super("Enemy");
             this.player = player;
             this.attackTimer = null;
@@ -35,15 +35,26 @@ namespace doomClone {
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent<any>("checkWallCollisionForEnemy");
             this.initSounds();
-            this.initEnemy(x,y);
+            this.initEnemy(x,z);
         }
 
-        public setCurrentState(state : string) : void {
-            this.currentState = state;
+        public getSpeed() : number {
+            return this.speed;
+        }
+
+        public getAhead() : f.Vector3 {
+            let speedTimesSight : number = this.speed * this.aggroRadius;
+            this.ahead = this.mtxLocal.translation.copy;
+            this.ahead.add(new f.Vector3(0, 0, speedTimesSight));
+            return this.ahead;
         }
 
         public getBullets() : EnemyBullet[] {
             return this.bullets;
+        }
+
+        public getIsAlive() : boolean {
+            return this.isAlive;
         }
 
         public deleteCertainBullet(bullet : EnemyBullet) : void {
@@ -64,10 +75,14 @@ namespace doomClone {
             this.componentAudio = new f.ComponentAudio(this.attackedSound);
         }
 
-        public initEnemy(x : number, y : number) : void {
+        public initEnemy(x : number, z : number) : void {
             let enemyComponentTransform: f.ComponentTransform = new f.ComponentTransform(
-                f.Matrix4x4.TRANSLATION(new f.Vector3(x, y, 0)));
+                f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
             this.addComponent(enemyComponentTransform);
+            this.mtxLocal.rotateY(-90);
+            this.mtxLocal.rotateZ(-90);
+            this.mtxLocal.translateZ(z);
+            this.mtxLocal.translateX(x);
             this.initSprites();
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
@@ -161,9 +176,6 @@ namespace doomClone {
         private checkCurrentState = () => {
             if(this.isAlive) {
                 switch (this.currentState) {
-                    case 'avoid':
-                        this.avoid();
-                        break;
                     case 'hunt':
                         this.hunt();
                         break;
@@ -186,15 +198,6 @@ namespace doomClone {
             this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
         }
 
-        private avoid() : void {
-            this.addAndRemoveSprites(this.idleSprites);
-            this.mtxLocal.translateZ((-3) * this.speed * f.Loop.timeFrameGame);
-            let diffX : number = this.mtxLocal.translation.x - this.player.mtxLocal.translation.x;
-            let targetVector : f.Vector3 = new f.Vector3(diffX, this.mtxLocal.translation.y, this.mtxLocal.translation.z);
-            this.mtxLocal.lookAt(targetVector, f.Vector3.Z());
-            this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameGame);
-        }
-
         private hunt() : void {
             this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
             this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameGame);
@@ -205,13 +208,14 @@ namespace doomClone {
         private flee() : void {
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.showFrame(3);
-            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(-(2 * this.speed) * f.Loop.timeFrameGame);
+            // this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
+            this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameGame);
         }
 
         private attack() : void {
             if(!this.player.getIsDead() && this.attackTimer === null) {
-                this.attackTimer = new f.Timer(f.Time.game, 500, 1, () => {
+                this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
+                this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
                     this.componentAudio.play(true);
@@ -272,10 +276,10 @@ namespace doomClone {
         }
 
         private checkShotCollision = () => {
-            let projectiles : Bullet[] = this.player.getCurrentBullets();
+            let projectiles : PlayerBullet[] = this.player.getCurrentBullets();
             projectiles.forEach(bullet => {
                 if(bullet.getRange() > 0) {
-                    if (this.calculateDistance(bullet) <=  this.shotCollisionRadius) {
+                    if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
                         this.addAndRemoveSprites(this.hitSprites);
                         this.player.deleteCertainBullet(bullet);
                         this.setHealth(bullet.getDamage());
@@ -286,29 +290,28 @@ namespace doomClone {
             });
         }
 
-        private calculateDistance(node : f.Node) : number {
-            let enemyTranslationCopy = this.mtxLocal.translation.copy;
-            let nodeTranslationCopy = node.mtxLocal.translation.copy;
-            enemyTranslationCopy.subtract(nodeTranslationCopy);
-            return Math.sqrt(Math.pow(enemyTranslationCopy.x, 2) + Math.pow(enemyTranslationCopy.y, 2));
-        }
-
         private checkWallCollision = () => {
             this.getParent().broadcastEvent(this.checkWallCollisionForEnemyEvent);
         }
 
         private checkPlayerPositionRelativeToRadius = () => {
             this.checkWallCollision();
-            let distance : number = this.calculateDistance(this.player);
-            if(distance <= this.aggroRadius && distance > this.attackRadius){
-                this.currentState = 'hunt';
-            } else if (distance <= this.attackRadius && distance > this.flightRadius) {
-                this.currentState = 'attack';
-            } else if (distance <= this.flightRadius) {
+            let playerTranslation : f.Vector3 = this.player.mtxLocal.translation;
+            if (this.isObjectColliding(playerTranslation, this.flightRadius)
+            ) {
                 this.currentState = 'flight';
+            } else if (this.isObjectColliding(playerTranslation, this.attackRadius)
+            ) {
+                this.currentState = 'attack';
+            } else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
+                this.currentState = 'hunt';
             } else {
                 this.currentState = 'idle';
             }
+        }
+
+        private isObjectColliding(objectTranslation : f.Vector3, radius : number) : boolean {
+            return objectTranslation.isInsideSphere(this.mtxLocal.translation, radius);
         }
 
     }

@@ -3,8 +3,8 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     class HealthKit extends doomClone.Item {
-        constructor(player, x, y) {
-            super(player, "Health", x, y, document.getElementById("health"));
+        constructor(player, x, z) {
+            super(player, "Health", x, z, document.getElementById("health"));
             this.healthAmount = 10;
             this.checkCollision = () => {
                 if (this.isColliding) {

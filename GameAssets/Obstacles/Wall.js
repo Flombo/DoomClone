@@ -2,23 +2,24 @@
 var doomClone;
 (function (doomClone) {
     class Wall extends doomClone.Obstacle {
-        constructor(player, enemies, x, y) {
-            super(player, enemies, x, y, "Wall", document.getElementById("wall"));
+        constructor(player, enemies, x, z) {
+            super(player, enemies, x, z, "Wall", document.getElementById("wall"));
             this.player = player;
             this.addEventListener("playerCollision", () => { this.checkPlayerCollision(); }, true);
             this.addEventListener("checkWallCollisionForEnemy", () => { this.checkEnemyCollision(); }, true);
         }
         checkPlayerCollision() {
-            let distance = this.calculateDistance(this.player);
-            if (distance <= this.playerCollisionRadius) {
-                this.player.setIsAllowedToMove(false);
+            if (this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                this.player.mtxLocal.translateZ(-this.player.moveAmount);
             }
         }
         checkEnemyCollision() {
             Array.from(this.enemies).forEach(enemy => {
-                let distance = this.calculateDistance(enemy);
-                if (distance <= this.enemyCollisionRadius) {
-                    enemy.setCurrentState('avoid');
+                if (enemy.getAhead().isInsideSphere(this.mtxLocal.translation, 1)) {
+                    let avoidanceForce = enemy.getAhead().copy;
+                    avoidanceForce.subtract(this.mtxLocal.translation.copy);
+                    enemy.mtxLocal.translateZ((enemy.getSpeed()) + avoidanceForce.z);
+                    enemy.mtxLocal.translateX((enemy.getSpeed()) + avoidanceForce.x);
                 }
             });
         }
