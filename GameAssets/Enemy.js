@@ -50,17 +50,19 @@ var doomClone;
             this.checkPlayerPositionRelativeToRadius = () => {
                 this.checkWallCollision();
                 let playerTranslation = this.player.mtxLocal.translation;
-                if (this.isObjectColliding(playerTranslation, this.flightRadius)) {
-                    this.currentState = 'flight';
-                }
-                else if (this.isObjectColliding(playerTranslation, this.attackRadius)) {
-                    this.currentState = 'attack';
-                }
-                else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
-                    this.currentState = 'hunt';
-                }
-                else {
-                    this.currentState = 'idle';
+                if (this.isAlive) {
+                    if (this.isObjectColliding(playerTranslation, this.flightRadius)) {
+                        this.currentState = 'flight';
+                    }
+                    else if (this.isObjectColliding(playerTranslation, this.attackRadius)) {
+                        this.currentState = 'attack';
+                    }
+                    else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
+                        this.currentState = 'hunt';
+                    }
+                    else {
+                        this.currentState = 'idle';
+                    }
                 }
             };
             this.player = player;
@@ -102,6 +104,7 @@ var doomClone;
             this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
             this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
             this.componentAudio = new f.ComponentAudio(this.attackedSound);
+            this.addComponent(this.componentAudio);
         }
         initEnemy(x, z) {
             let enemyComponentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
@@ -181,12 +184,11 @@ var doomClone;
             this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameReal);
         }
         attack() {
-            if (!this.player.getIsDead() && this.attackTimer === null) {
+            if (!this.player.getIsDead() && this.isAlive && this.attackTimer === null) {
                 this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
                 this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
-                    console.log(this.componentAudio);
                     this.componentAudio.play(true);
                     if (this.getParent() !== null) {
                         let enemyBullet = new doomClone.EnemyBullet(this.mtxLocal);

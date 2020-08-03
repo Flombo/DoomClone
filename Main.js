@@ -5,7 +5,7 @@ var doomClone;
     window.addEventListener("load", (event) => {
         hndLoad(event);
     });
-    function hndLoad(_event) {
+    async function hndLoad(_event) {
         let canvas = document.getElementById("game");
         let portraitCanvas = document.getElementById("portraitCanvas");
         let pistolCanvas = document.getElementById("playerPistolCanvas");
@@ -97,6 +97,12 @@ var doomClone;
         f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
         f.Loop.addEventListener("loopFrame", renderLoop);
         f.Loop.start(f.LOOP_MODE.TIME_REAL, 60);
+        let audio = await f.Audio.load("../../sounds/doomTheme.mp3");
+        let componentAudio = new f.ComponentAudio();
+        componentAudio.audio = audio;
+        root.addComponent(componentAudio);
+        componentAudio.volume = 0.25;
+        componentAudio.play(true);
         function renderLoop() {
             if (!gameMenuManager.getIsPaused()) {
                 if (!player.getIsDead()) {

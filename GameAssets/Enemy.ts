@@ -73,6 +73,7 @@ namespace doomClone {
             this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
             this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
             this.componentAudio = new f.ComponentAudio(this.attackedSound);
+            this.addComponent(this.componentAudio);
         }
 
         public initEnemy(x : number, z : number) : void {
@@ -213,12 +214,11 @@ namespace doomClone {
         }
 
         private attack() : void {
-            if(!this.player.getIsDead() && this.attackTimer === null) {
+            if(!this.player.getIsDead() && this.isAlive && this.attackTimer === null) {
                 this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
                 this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
-                    console.log(this.componentAudio);
                     this.componentAudio.play(true);
                     if(this.getParent() !== null){
                         let enemyBullet: EnemyBullet = new EnemyBullet(this.mtxLocal);
@@ -298,16 +298,18 @@ namespace doomClone {
         private checkPlayerPositionRelativeToRadius = () => {
             this.checkWallCollision();
             let playerTranslation : f.Vector3 = this.player.mtxLocal.translation;
-            if (this.isObjectColliding(playerTranslation, this.flightRadius)
-            ) {
-                this.currentState = 'flight';
-            } else if (this.isObjectColliding(playerTranslation, this.attackRadius)
-            ) {
-                this.currentState = 'attack';
-            } else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
-                this.currentState = 'hunt';
-            } else {
-                this.currentState = 'idle';
+            if(this.isAlive) {
+                if (this.isObjectColliding(playerTranslation, this.flightRadius)
+                ) {
+                    this.currentState = 'flight';
+                } else if (this.isObjectColliding(playerTranslation, this.attackRadius)
+                ) {
+                    this.currentState = 'attack';
+                } else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
+                    this.currentState = 'hunt';
+                } else {
+                    this.currentState = 'idle';
+                }
             }
         }
 
