@@ -7,8 +7,8 @@ var doomClone;
             super(player, "Armor", x, z, document.getElementById("armor"));
             this.armorAmount = 10;
             this.checkCollision = () => {
-                if (this.isColliding) {
-                    this.player.setArmor(this.armorAmount);
+                if (this.getIsColliding()) {
+                    this.getPlayer().setArmor(this.armorAmount);
                     f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.checkCollision);
                     this.removeSelf();
                 }

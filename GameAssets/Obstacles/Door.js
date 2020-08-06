@@ -24,7 +24,7 @@ var doomClone;
             }
         }
         checkPlayerInteractionDistance() {
-            let isPlayerInInteractionRadius = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 4);
+            let isPlayerInInteractionRadius = this.getPlayer().mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 3.5);
             if (isPlayerInInteractionRadius) {
                 this.interactionPrompt.innerText = `Press "${localStorage.getItem('INTERACT')}" to interact`;
                 this.interactionPrompt.setAttribute("style", "opacity: 1");
@@ -51,20 +51,19 @@ var doomClone;
         }
         checkPlayerCollision() {
             if (this.isClosed) {
-                if (this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
-                    this.player.mtxLocal.translateZ(-this.player.moveAmount);
+                let player = this.getPlayer();
+                if (player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                    player.mtxLocal.translateZ(-player.getMoveAmount());
                 }
             }
         }
         checkEnemyCollision() {
             this.checkPlayerInteractionDistance();
             if (this.isClosed) {
-                Array.from(this.enemies).forEach(enemy => {
-                    if (enemy.getAhead().isInsideSphere(this.mtxLocal.translation, 1)) {
-                        let avoidanceForce = enemy.getAhead().copy;
-                        avoidanceForce.subtract(this.mtxLocal.translation.copy);
-                        enemy.mtxLocal.translateZ((enemy.getSpeed()) + avoidanceForce.z);
-                        enemy.mtxLocal.translateX((enemy.getSpeed()) + avoidanceForce.x);
+                Array.from(this.getEnemies()).forEach(enemy => {
+                    if (enemy.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                        enemy.mtxLocal.translateZ(-enemy.getMoveAmount());
+                        enemy.mtxLocal.rotateY(90);
                     }
                 });
             }

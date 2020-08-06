@@ -7,9 +7,9 @@ var doomClone;
             super(player, "Health", x, z, document.getElementById("health"));
             this.healthAmount = 10;
             this.checkCollision = () => {
-                if (this.isColliding) {
-                    if (this.player.getHealth() - this.healthAmount < 90) {
-                        this.player.setHealth(this.healthAmount);
+                if (this.getIsColliding()) {
+                    if (this.getPlayer().getHealth() - this.healthAmount < 90) {
+                        this.getPlayer().setHealth(this.healthAmount);
                         f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.checkCollision);
                         this.removeSelf();
                     }

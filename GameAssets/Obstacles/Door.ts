@@ -33,7 +33,7 @@ namespace doomClone {
 
         private checkPlayerInteractionDistance() : boolean {
             let isPlayerInInteractionRadius : boolean =
-                this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 4);
+                this.getPlayer().mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 3.5);
             if(isPlayerInInteractionRadius){
                 this.interactionPrompt.innerText = `Press "${localStorage.getItem('INTERACT')}" to interact`;
                 this.interactionPrompt.setAttribute("style", "opacity: 1");
@@ -60,8 +60,9 @@ namespace doomClone {
 
         private checkPlayerCollision() : void {
             if(this.isClosed) {
-                if (this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
-                    this.player.mtxLocal.translateZ(-this.player.moveAmount);
+                let player : Player = this.getPlayer();
+                if (player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                    player.mtxLocal.translateZ(-player.getMoveAmount());
                 }
             }
         }
@@ -69,12 +70,10 @@ namespace doomClone {
         private checkEnemyCollision() : void {
             this.checkPlayerInteractionDistance();
             if(this.isClosed) {
-                Array.from(this.enemies).forEach(enemy => {
-                    if(enemy.getAhead().isInsideSphere(this.mtxLocal.translation, 1)) {
-                        let avoidanceForce : f.Vector3 = enemy.getAhead().copy;
-                        avoidanceForce.subtract(this.mtxLocal.translation.copy);
-                        enemy.mtxLocal.translateZ((enemy.getSpeed()) + avoidanceForce.z);
-                        enemy.mtxLocal.translateX((enemy.getSpeed()) + avoidanceForce.x);
+                Array.from(this.getEnemies()).forEach(enemy => {
+                    if(enemy.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
+                        enemy.mtxLocal.translateZ(-enemy.getMoveAmount());
+                        enemy.mtxLocal.rotateY(90);
                     }
                 });
             }

@@ -10,6 +10,12 @@ var doomClone;
             this.enemies = enemies;
             this.init(x, z);
         }
+        getPlayer() {
+            return this.player;
+        }
+        getEnemies() {
+            return this.enemies;
+        }
         init(x, z) {
             let componentMesh = new f.ComponentMesh(new f.MeshCube());
             let textureImage = new f.TextureImage();

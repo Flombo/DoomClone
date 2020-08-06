@@ -3,17 +3,17 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     var fAid = FudgeAid;
-    let speedTypes;
-    (function (speedTypes) {
-        speedTypes[speedTypes["WALK"] = 0.05] = "WALK";
-        speedTypes[speedTypes["ROTATION"] = 0.15000000000000002] = "ROTATION";
-        speedTypes[speedTypes["SPRINT"] = 0.1] = "SPRINT";
-    })(speedTypes || (speedTypes = {}));
+    let SpeedTypes;
+    (function (SpeedTypes) {
+        SpeedTypes[SpeedTypes["WALK"] = 0.05] = "WALK";
+        SpeedTypes[SpeedTypes["ROTATION"] = 0.15000000000000002] = "ROTATION";
+        SpeedTypes[SpeedTypes["SPRINT"] = 0.1] = "SPRINT";
+    })(SpeedTypes || (SpeedTypes = {}));
     class Player extends f.Node {
         constructor() {
             super("Player");
-            this.walkSpeed = speedTypes.WALK;
-            this.rotationSpeed = speedTypes.ROTATION;
+            this.walkSpeed = SpeedTypes.WALK;
+            this.rotationSpeed = SpeedTypes.ROTATION;
             this.controlsLoader = new doomClone.ControlsLoader();
             this.keyMap = new Map();
             this.playerCollisionEvent = new CustomEvent("playerCollision");
@@ -42,6 +42,9 @@ var doomClone;
         getPistolSprites() {
             return this.pistolSprites;
         }
+        getMoveAmount() {
+            return this.moveAmount;
+        }
         //deletes bullet and removes his event-listener
         deleteCertainBullet(bullet) {
             let index = this.currentBullets.indexOf(bullet);
@@ -52,7 +55,6 @@ var doomClone;
                     this.getParent().removeChild(bullet);
                 }
             });
-            console.log(this.currentBullets.length);
         }
         setHealth(health) {
             if (this.health + health > 0) {
@@ -67,7 +69,7 @@ var doomClone;
             }
             else {
                 this.health = 0;
-                this.setIsDeadTrue();
+                this.isDead = true;
             }
             this.healthBar.value = this.health;
         }
@@ -92,11 +94,6 @@ var doomClone;
             this.ammoBar.innerText = String(this.ammo);
             this.componentAudio.audio = this.pickUpSound;
             this.componentAudio.play(true);
-        }
-        setIsDeadTrue() {
-            this.componentAudio.audio = this.playerDyingSound;
-            this.componentAudio.play(true);
-            this.isDead = true;
         }
         //inits parameter, bars, audio and sprites
         initPlayer() {
@@ -125,7 +122,7 @@ var doomClone;
                     let projectiles = enemy.getBullets();
                     projectiles.forEach(bullet => {
                         if (bullet.getRange() > 0) {
-                            this.becomeDamaged(bullet, enemy);
+                            this.takeDamage(bullet, enemy);
                         }
                         else {
                             bullet.playExplosionAnimation();
@@ -135,7 +132,7 @@ var doomClone;
                 });
             }
         }
-        becomeDamaged(bullet, enemy) {
+        takeDamage(bullet, enemy) {
             if (bullet.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1)) {
                 bullet.playExplosionAnimation();
                 enemy.deleteCertainBullet(bullet);
@@ -148,8 +145,8 @@ var doomClone;
             this.magazineEmptySound = await f.Audio.load("../../sounds/wrong.mp3");
             this.pickUpSound = await f.Audio.load("../../sounds/reload.wav");
             this.playerAttackedSound = await f.Audio.load("../../sounds/playerShot.wav");
-            this.playerDyingSound = await f.Audio.load("../../sounds/playerDeath.wav");
             this.componentAudio = new f.ComponentAudio(this.pistolSound);
+            this.componentAudio.volume = 1;
             this.addComponent(new f.ComponentAudioListener());
             this.addComponent(this.componentAudio);
         }
@@ -226,7 +223,7 @@ var doomClone;
                 this.pistolSprites.setFrameDirection(0);
                 this.keyMap.set(event.code, false);
                 if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
-                    this.walkSpeed = speedTypes.WALK;
+                    this.walkSpeed = SpeedTypes.WALK;
                     if (this.stamina < 100) {
                         new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
                             this.relax();
@@ -258,14 +255,14 @@ var doomClone;
             if (this.keyMap.get(this.controlsLoader.getRightKey())) {
                 this.checkCollision();
                 this.portraitSprites.showFrame(2);
-                this.rotate(-this.rotationSpeed * f.Loop.timeFrameReal);
+                this.rotate(-this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
         checkLeftKey() {
             if (this.keyMap.get(this.controlsLoader.getLeftKey())) {
                 this.checkCollision();
                 this.portraitSprites.showFrame(0);
-                this.rotate(this.rotationSpeed * f.Loop.timeFrameReal);
+                this.rotate(this.rotationSpeed * f.Loop.timeFrameGame);
             }
         }
         /*
@@ -275,7 +272,7 @@ var doomClone;
         checkUpKey() {
             if (this.keyMap.get(this.controlsLoader.getUpKey())) {
                 this.checkCollision();
-                this.moveAmount = this.walkSpeed * f.Loop.timeFrameReal;
+                this.moveAmount = this.walkSpeed * f.Loop.timeFrameGame;
                 this.move(this.moveAmount);
                 this.checkSprintKey();
                 this.checkLeftKey();
@@ -292,7 +289,7 @@ var doomClone;
         checkDownKey() {
             if (this.keyMap.get(this.controlsLoader.getDownKey())) {
                 this.checkCollision();
-                this.moveAmount = -this.walkSpeed * f.Loop.timeFrameReal;
+                this.moveAmount = -this.walkSpeed * f.Loop.timeFrameGame;
                 this.move(this.moveAmount);
                 this.checkLeftKey();
                 this.checkRightKey();
@@ -306,7 +303,7 @@ var doomClone;
         */
         sprint() {
             if (this.stamina > 0) {
-                this.walkSpeed = speedTypes.SPRINT;
+                this.walkSpeed = SpeedTypes.SPRINT;
                 this.stamina -= 5;
                 this.staminaBar.value = this.stamina;
             }
@@ -316,7 +313,7 @@ var doomClone;
         }
         relax() {
             if (this.stamina < 100) {
-                this.walkSpeed = speedTypes.WALK;
+                this.walkSpeed = SpeedTypes.WALK;
                 this.stamina += 5;
                 this.staminaBar.value = this.stamina;
             }

@@ -5,9 +5,9 @@ namespace doomClone {
 
     export class Projectiles extends f.Node {
 
-        private speed : number;
+        private readonly speed : number;
         private range : number;
-        private damage : number;
+        private readonly damage : number;
         private projectileSprites : fAid.NodeSprite;
         private projectileExplosionSprites : fAid.NodeSprite;
         private readonly shotCollisionEvent : CustomEvent;
@@ -29,6 +29,23 @@ namespace doomClone {
             this.shotCollisionEvent = shotCollisionEvent;
             this.initProjectile(startMatrix, z, y);
             this.initProjectileExplosion();
+        }
+
+        public getRange() : number {
+            return this.range;
+        }
+
+        public getDamage() : number {
+            return this.damage;
+        }
+
+        public removeEventListener() : void {
+            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.update);
+        }
+
+        public playExplosionAnimation() : void {
+            this.removeChild(this.projectileSprites);
+            this.appendChild(this.projectileExplosionSprites);
         }
 
         private initProjectileExplosion() : void {
@@ -63,28 +80,11 @@ namespace doomClone {
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.update);
         }
 
-        public playExplosionAnimation() : void {
-            this.removeChild(this.projectileSprites);
-            this.appendChild(this.projectileExplosionSprites);
-        }
-
         private update = () =>  {
-            let distanceToTravel: number = this.speed * f.Loop.timeFrameReal;
+            let distanceToTravel: number = this.speed * f.Loop.timeFrameGame;
             this.mtxLocal.translateZ(distanceToTravel);
             this.getParent().broadcastEvent(this.shotCollisionEvent);
             this.range--;
-        }
-
-        public getRange() : number {
-            return this.range;
-        }
-
-        public getDamage() : number {
-            return this.damage;
-        }
-
-        public removeEventListener() : void {
-            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.update);
         }
 
     }

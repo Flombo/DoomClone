@@ -4,7 +4,7 @@ namespace doomClone {
 
     export class Item extends f.Node{
 
-        protected readonly player : Player;
+        private readonly player : Player;
         private rotationSpeed : number = 50 / 1000;
         protected isColliding : boolean;
 
@@ -14,8 +14,15 @@ namespace doomClone {
             this.init(x, z, img);
         }
 
+        public getPlayer() : Player {
+            return this.player;
+        }
 
-        protected init(x : number, z : number, img : HTMLImageElement) : void {
+        public getIsColliding() : boolean {
+            return this.isColliding;
+        }
+
+        private init(x : number, z : number, img : HTMLImageElement) : void {
             let componentMesh: f.ComponentMesh = new f.ComponentMesh(new f.MeshCube());
             componentMesh.pivot.scaleZ(0.25);
             componentMesh.pivot.scaleX(0.25);
@@ -40,20 +47,20 @@ namespace doomClone {
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.animateRotation);
         }
 
-        private animateRotation = () => {
-            this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameReal);
-        }
-
-        private checkPlayerCollision = () => {
-            this.isColliding = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1);
-        }
-
         protected removeSelf() : void {
             this.removeEventListener("playerCollision", this.checkPlayerCollision);
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.animateRotation);
             if(this.getParent() !== null){
                 this.getParent().removeChild(this);
             }
+        }
+
+        private animateRotation = () => {
+            this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameGame);
+        }
+
+        private checkPlayerCollision = () => {
+            this.isColliding = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1);
         }
 
     }

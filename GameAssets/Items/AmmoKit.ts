@@ -12,8 +12,8 @@ namespace doomClone {
         }
 
         private checkCollision = () => {
-            if (this.isColliding) {
-                this.player.setAmmo(this.ammoAmount);
+            if (this.getIsColliding()) {
+                this.getPlayer().setAmmo(this.ammoAmount);
                 f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCollision);
                 this.removeSelf();
             }

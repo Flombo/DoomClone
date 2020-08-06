@@ -33,6 +33,17 @@ var doomClone;
             this.pauseMenu = document.getElementById("pauseMenu");
             this.resumeButton = document.getElementById("resumeGameButton");
         }
+        getIsPaused() {
+            return this.isPaused;
+        }
+        showWinMenu() {
+            this.saveParameters();
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
+        }
+        showDeadMenu() {
+            this.saveParameters();
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
+        }
         initGameMenuHandling() {
             this.styleCanvas();
             window.addEventListener("resize", () => { this.styleCanvas(); });
@@ -51,20 +62,9 @@ var doomClone;
             });
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.checkIfAllEnemiesAreDead);
         }
-        getIsPaused() {
-            return this.isPaused;
-        }
-        showWinMenu() {
-            this.saveParameters();
-            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
-        }
-        showDeadMenu() {
-            this.saveParameters();
-            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
-        }
         saveParameters() {
             let timeTaken = Date.now() - this.startTime;
-            localStorage.setItem('HEALTH', this.player.getHealth().toString());
+            localStorage.setItem('HEALTH', Math.floor(this.player.getHealth()).toString());
             localStorage.setItem('ENEMIES', this.enemiesKilled.toString());
             localStorage.setItem("TIME", (Math.floor(timeTaken / 1000)).toString());
         }

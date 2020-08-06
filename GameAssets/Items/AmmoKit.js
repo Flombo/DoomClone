@@ -7,8 +7,8 @@ var doomClone;
             super(player, "Ammo", x, z, document.getElementById("ammo"));
             this.ammoAmount = 10;
             this.checkCollision = () => {
-                if (this.isColliding) {
-                    this.player.setAmmo(this.ammoAmount);
+                if (this.getIsColliding()) {
+                    this.getPlayer().setAmmo(this.ammoAmount);
                     f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.checkCollision);
                     this.removeSelf();
                 }

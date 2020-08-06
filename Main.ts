@@ -6,11 +6,10 @@ namespace doomClone {
 		hndLoad(event);
 	});
 
-	async function hndLoad(_event: Event): void {
+	async function hndLoad(_event: Event): Promise<void> {
 		let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("game");
 		let portraitCanvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("portraitCanvas");
 		let pistolCanvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("playerPistolCanvas");
-		// let miniMapCanvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("minimap");
 
 		let root : f.Node = new f.Node("root");
 
@@ -110,16 +109,10 @@ namespace doomClone {
 		let viewportPistol : f.Viewport = new f.Viewport();
 		viewportPistol.initialize("Pistol", player.getPistolSprites(), player.getPistolCamera(), pistolCanvas);
 
-		// let viewportMiniMap : f.Viewport = new f.Viewport();
-		// let miniMapCam : f.ComponentCamera = new f.ComponentCamera();
-		// miniMapCam.pivot.rotateY(180);
-		// miniMapCam.pivot.translateZ(-35);
-		// viewportMiniMap.initialize("Minimap", root, miniMapCam, miniMapCanvas);
-
 		f.AudioManager.default.listenTo(root);
 		f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
 		f.Loop.addEventListener("loopFrame", renderLoop);
-		f.Loop.start(f.LOOP_MODE.TIME_REAL, 60);
+		f.Loop.start(f.LOOP_MODE.TIME_GAME, 24);
 
 		let audio : f.Audio = await f.Audio.load("../../sounds/doomTheme.mp3");
 		let componentAudio : f.ComponentAudio = new f.ComponentAudio();
@@ -134,8 +127,6 @@ namespace doomClone {
 					f.AudioManager.default.update();
 					viewportPortrait.draw();
 					viewportPistol.draw();
-					console.log(f.Loop.getFpsRealAverage(), "fps")
-					// viewportMiniMap.draw();
 					viewport.draw();
 				} else {
 					gameMenuManager.showDeadMenu();

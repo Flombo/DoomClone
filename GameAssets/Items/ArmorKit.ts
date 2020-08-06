@@ -12,8 +12,8 @@ namespace doomClone {
         }
 
         private checkCollision = () => {
-            if (this.isColliding) {
-                this.player.setArmor(this.armorAmount);
+            if (this.getIsColliding()) {
+                this.getPlayer().setArmor(this.armorAmount);
                 f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCollision);
                 this.removeSelf();
             }

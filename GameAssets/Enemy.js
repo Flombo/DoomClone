@@ -3,12 +3,15 @@ var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
     var fAid = FudgeAid;
+    let EnemyRadius;
+    (function (EnemyRadius) {
+        EnemyRadius[EnemyRadius["AGGRO"] = 10] = "AGGRO";
+        EnemyRadius[EnemyRadius["ATTACK"] = 5] = "ATTACK";
+        EnemyRadius[EnemyRadius["FLIGHT"] = 3] = "FLIGHT";
+    })(EnemyRadius || (EnemyRadius = {}));
     class Enemy extends f.Node {
         constructor(player, x, z) {
             super("Enemy");
-            this.aggroRadius = 10;
-            this.attackRadius = 5;
-            this.flightRadius = 2;
             this.speed = 5 / 1000;
             this.health = 20;
             this.checkCurrentState = () => {
@@ -35,11 +38,13 @@ var doomClone;
                     if (bullet.getRange() > 0) {
                         if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
                             this.addAndRemoveSprites(this.hitSprites);
+                            bullet.playExplosionAnimation();
                             this.player.deleteCertainBullet(bullet);
                             this.setHealth(bullet.getDamage());
                         }
                     }
                     else {
+                        bullet.playExplosionAnimation();
                         this.player.deleteCertainBullet(bullet);
                     }
                 });
@@ -50,14 +55,15 @@ var doomClone;
             this.checkPlayerPositionRelativeToRadius = () => {
                 this.checkWallCollision();
                 let playerTranslation = this.player.mtxLocal.translation;
+                this.mtxLocal.lookAt(playerTranslation, f.Vector3.Z(), true);
                 if (this.isAlive) {
-                    if (this.isObjectColliding(playerTranslation, this.flightRadius)) {
+                    if (this.isObjectColliding(playerTranslation, EnemyRadius.FLIGHT)) {
                         this.currentState = 'flight';
                     }
-                    else if (this.isObjectColliding(playerTranslation, this.attackRadius)) {
+                    else if (this.isObjectColliding(playerTranslation, EnemyRadius.ATTACK)) {
                         this.currentState = 'attack';
                     }
-                    else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
+                    else if (this.isObjectColliding(playerTranslation, EnemyRadius.AGGRO)) {
                         this.currentState = 'hunt';
                     }
                     else {
@@ -74,14 +80,8 @@ var doomClone;
             this.initSounds();
             this.initEnemy(x, z);
         }
-        getSpeed() {
-            return this.speed;
-        }
-        getAhead() {
-            let speedTimesSight = this.speed * this.aggroRadius;
-            this.ahead = this.mtxLocal.translation.copy;
-            this.ahead.add(new f.Vector3(0, 0, speedTimesSight));
-            return this.ahead;
+        getMoveAmount() {
+            return this.moveAmount;
         }
         getBullets() {
             return this.bullets;
@@ -99,13 +99,6 @@ var doomClone;
                 }
             });
         }
-        async initSounds() {
-            this.attackSound = await f.Audio.load("../../sounds/decademonAttack.wav");
-            this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
-            this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
-            this.componentAudio = new f.ComponentAudio(this.attackedSound);
-            this.addComponent(this.componentAudio);
-        }
         initEnemy(x, z) {
             let enemyComponentTransform = new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
             this.addComponent(enemyComponentTransform);
@@ -117,6 +110,13 @@ var doomClone;
             this.addEventListener("shotCollision", () => { this.checkShotCollision(); }, true);
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.checkCurrentState);
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.checkPlayerPositionRelativeToRadius);
+        }
+        async initSounds() {
+            this.attackSound = await f.Audio.load("../../sounds/decademonAttack.wav");
+            this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
+            this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
+            this.componentAudio = new f.ComponentAudio(this.attackedSound);
+            this.addComponent(this.componentAudio);
         }
         initSprites() {
             this.initIdleSprites();
@@ -169,23 +169,21 @@ var doomClone;
         idle() {
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.setFrameDirection(1);
-            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
         }
         hunt() {
-            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameReal);
+            this.moveAmount = this.speed * f.Loop.timeFrameGame;
+            this.mtxLocal.translateZ(this.moveAmount);
             this.idleSprites.showFrame(0);
             this.idleSprites.setFrameDirection(0);
         }
         flee() {
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.showFrame(3);
-            // this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameReal);
+            this.moveAmount = -this.speed * f.Loop.timeFrameGame;
+            this.mtxLocal.translateZ(this.moveAmount);
         }
         attack() {
             if (!this.player.getIsDead() && this.isAlive && this.attackTimer === null) {
-                this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
                 this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;

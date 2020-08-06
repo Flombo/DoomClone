@@ -7,7 +7,7 @@ var doomClone;
         constructor(name, startMatrix, speed, range, damage, shotCollisionEvent, z, y) {
             super(name);
             this.update = () => {
-                let distanceToTravel = this.speed * f.Loop.timeFrameReal;
+                let distanceToTravel = this.speed * f.Loop.timeFrameGame;
                 this.mtxLocal.translateZ(distanceToTravel);
                 this.getParent().broadcastEvent(this.shotCollisionEvent);
                 this.range--;
@@ -18,6 +18,19 @@ var doomClone;
             this.shotCollisionEvent = shotCollisionEvent;
             this.initProjectile(startMatrix, z, y);
             this.initProjectileExplosion();
+        }
+        getRange() {
+            return this.range;
+        }
+        getDamage() {
+            return this.damage;
+        }
+        removeEventListener() {
+            f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+        }
+        playExplosionAnimation() {
+            this.removeChild(this.projectileSprites);
+            this.appendChild(this.projectileExplosionSprites);
         }
         initProjectileExplosion() {
             let coat = new ƒ.CoatTextured();
@@ -48,19 +61,6 @@ var doomClone;
             this.mtxLocal.translateY(y);
             this.appendChild(this.projectileSprites);
             f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
-        }
-        playExplosionAnimation() {
-            this.removeChild(this.projectileSprites);
-            this.appendChild(this.projectileExplosionSprites);
-        }
-        getRange() {
-            return this.range;
-        }
-        getDamage() {
-            return this.damage;
-        }
-        removeEventListener() {
-            f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
         }
     }
     doomClone.Projectiles = Projectiles;

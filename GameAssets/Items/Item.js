@@ -7,13 +7,19 @@ var doomClone;
             super(name);
             this.rotationSpeed = 50 / 1000;
             this.animateRotation = () => {
-                this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameReal);
+                this.mtxLocal.rotateY(this.rotationSpeed * f.Loop.timeFrameGame);
             };
             this.checkPlayerCollision = () => {
                 this.isColliding = this.player.mtxLocal.translation.isInsideSphere(this.mtxLocal.translation, 1);
             };
             this.player = player;
             this.init(x, z, img);
+        }
+        getPlayer() {
+            return this.player;
+        }
+        getIsColliding() {
+            return this.isColliding;
         }
         init(x, z, img) {
             let componentMesh = new f.ComponentMesh(new f.MeshCube());

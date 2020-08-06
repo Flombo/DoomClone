@@ -4,9 +4,9 @@ namespace doomClone {
 
     export class Obstacle extends f.Node {
 
-        protected player : Player;
-        protected enemies : Enemy[];
-        private img : HTMLImageElement;
+        private readonly player : Player;
+        private readonly enemies : Enemy[];
+        private readonly img : HTMLImageElement;
 
         constructor(player : Player, enemies : Enemy[], x : number, z : number, name : string, img : HTMLImageElement) {
             super(name);
@@ -14,6 +14,14 @@ namespace doomClone {
             this.img = img;
             this.enemies = enemies;
             this.init(x, z);
+        }
+
+        public getPlayer() : Player {
+            return this.player;
+        }
+
+        public getEnemies() : Enemy[] {
+            return this.enemies;
         }
 
         private init(x : number, z: number) : void {

@@ -2,7 +2,7 @@ namespace doomClone {
 
     import f = FudgeCore;
 
-    enum defaultKeys {
+    enum DefaultKeys {
         UP = f.KEYBOARD_CODE.ARROW_UP, DOWN = f.KEYBOARD_CODE.ARROW_DOWN, LEFT = f.KEYBOARD_CODE.ARROW_LEFT,
         RIGHT = f.KEYBOARD_CODE.ARROW_RIGHT, SHOOT = f.KEYBOARD_CODE.CTRL_LEFT, SPRINT = f.KEYBOARD_CODE.SHIFT_LEFT,
         INTERACT = f.KEYBOARD_CODE.SPACE
@@ -133,25 +133,25 @@ namespace doomClone {
             buttons.forEach(button => {
                 switch (button.id) {
                     case 'upButton':
-                        button.innerText = String(defaultKeys.UP);
+                        button.innerText = String(DefaultKeys.UP);
                         break;
                     case 'downButton':
-                        button.innerText = String(defaultKeys.DOWN);
+                        button.innerText = String(DefaultKeys.DOWN);
                         break;
                     case 'leftButton':
-                        button.innerText = String(defaultKeys.LEFT);
+                        button.innerText = String(DefaultKeys.LEFT);
                         break;
                     case 'rightButton':
-                        button.innerText = String(defaultKeys.RIGHT);
+                        button.innerText = String(DefaultKeys.RIGHT);
                         break;
                     case 'sprintButton':
-                        button.innerText = String(defaultKeys.SPRINT);
+                        button.innerText = String(DefaultKeys.SPRINT);
                         break;
                     case 'shootButton':
-                        button.innerText = String(defaultKeys.SHOOT);
+                        button.innerText = String(DefaultKeys.SHOOT);
                         break;
                     case 'interactButton':
-                        button.innerText = String(defaultKeys.INTERACT);
+                        button.innerText = String(DefaultKeys.INTERACT);
                         break;
                 }
             });

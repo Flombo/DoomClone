@@ -14,7 +14,7 @@ namespace doomClone {
         private pauseMenu : HTMLDivElement;
         private resumeButton : HTMLButtonElement;
         private enemies : Enemy[];
-        private startTime : number;
+        private readonly startTime : number;
         private enemiesKilled : number;
         private player : Player;
 
@@ -28,6 +28,20 @@ namespace doomClone {
             this.HUD = document.getElementsByTagName("header")[0];
             this.pauseMenu = <HTMLDivElement>document.getElementById("pauseMenu");
             this.resumeButton = <HTMLButtonElement>document.getElementById("resumeGameButton");
+        }
+
+        public getIsPaused() : boolean {
+            return this.isPaused;
+        }
+
+        public showWinMenu() : void {
+            this.saveParameters();
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
+        }
+
+        public showDeadMenu() : void {
+            this.saveParameters();
+            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
         }
 
         public initGameMenuHandling() : void {
@@ -66,23 +80,9 @@ namespace doomClone {
             }
         }
 
-        public getIsPaused() : boolean {
-            return this.isPaused;
-        }
-
-        public showWinMenu() : void {
-            this.saveParameters();
-            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.WINMENU));
-        }
-
-        public showDeadMenu() : void {
-            this.saveParameters();
-            doomClone.GameMenuManager.setURLToMenuURL(doomClone.GameMenuManager.generateMenuURL(MenuURLS.DEATHMENU));
-        }
-
         private saveParameters() : void {
             let timeTaken : number = Date.now() - this.startTime;
-            localStorage.setItem('HEALTH', this.player.getHealth().toString());
+            localStorage.setItem('HEALTH', Math.floor(this.player.getHealth()).toString());
             localStorage.setItem('ENEMIES', this.enemiesKilled.toString());
             localStorage.setItem("TIME", (Math.floor(timeTaken / 1000)).toString());
         }

@@ -2,16 +2,16 @@
 var doomClone;
 (function (doomClone) {
     var f = FudgeCore;
-    let defaultKeys;
-    (function (defaultKeys) {
-        defaultKeys["UP"] = "ArrowUp";
-        defaultKeys["DOWN"] = "ArrowDown";
-        defaultKeys["LEFT"] = "ArrowLeft";
-        defaultKeys["RIGHT"] = "ArrowRight";
-        defaultKeys["SHOOT"] = "ControlLeft";
-        defaultKeys["SPRINT"] = "ShiftLeft";
-        defaultKeys["INTERACT"] = "Space";
-    })(defaultKeys || (defaultKeys = {}));
+    let DefaultKeys;
+    (function (DefaultKeys) {
+        DefaultKeys["UP"] = "ArrowUp";
+        DefaultKeys["DOWN"] = "ArrowDown";
+        DefaultKeys["LEFT"] = "ArrowLeft";
+        DefaultKeys["RIGHT"] = "ArrowRight";
+        DefaultKeys["SHOOT"] = "ControlLeft";
+        DefaultKeys["SPRINT"] = "ShiftLeft";
+        DefaultKeys["INTERACT"] = "Space";
+    })(DefaultKeys || (DefaultKeys = {}));
     window.addEventListener("load", () => {
         new ControlMenuManager();
     });
@@ -124,25 +124,25 @@ var doomClone;
             buttons.forEach(button => {
                 switch (button.id) {
                     case 'upButton':
-                        button.innerText = String(defaultKeys.UP);
+                        button.innerText = String(DefaultKeys.UP);
                         break;
                     case 'downButton':
-                        button.innerText = String(defaultKeys.DOWN);
+                        button.innerText = String(DefaultKeys.DOWN);
                         break;
                     case 'leftButton':
-                        button.innerText = String(defaultKeys.LEFT);
+                        button.innerText = String(DefaultKeys.LEFT);
                         break;
                     case 'rightButton':
-                        button.innerText = String(defaultKeys.RIGHT);
+                        button.innerText = String(DefaultKeys.RIGHT);
                         break;
                     case 'sprintButton':
-                        button.innerText = String(defaultKeys.SPRINT);
+                        button.innerText = String(DefaultKeys.SPRINT);
                         break;
                     case 'shootButton':
-                        button.innerText = String(defaultKeys.SHOOT);
+                        button.innerText = String(DefaultKeys.SHOOT);
                         break;
                     case 'interactButton':
-                        button.innerText = String(defaultKeys.INTERACT);
+                        button.innerText = String(DefaultKeys.INTERACT);
                         break;
                 }
             });

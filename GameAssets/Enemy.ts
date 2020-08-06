@@ -3,11 +3,12 @@ namespace doomClone {
     import f =  FudgeCore;
     import fAid = FudgeAid;
 
+    enum EnemyRadius {
+        AGGRO = 10, ATTACK = 5, FLIGHT = 3
+    }
+
     export class Enemy extends f.Node{
 
-        private aggroRadius : number = 10;
-        private attackRadius : number = 5;
-        private flightRadius : number = 2;
         private speed : number = 5 / 1000;
         private readonly player : Player;
         private health : number = 20;
@@ -24,7 +25,7 @@ namespace doomClone {
         private currentState : string;
         private attackTimer : f.Timer
         private isAlive : boolean;
-        private ahead : f.Vector3;
+        private moveAmount : number;
 
         constructor(player : Player, x : number, z : number) {
             super("Enemy");
@@ -38,15 +39,8 @@ namespace doomClone {
             this.initEnemy(x,z);
         }
 
-        public getSpeed() : number {
-            return this.speed;
-        }
-
-        public getAhead() : f.Vector3 {
-            let speedTimesSight : number = this.speed * this.aggroRadius;
-            this.ahead = this.mtxLocal.translation.copy;
-            this.ahead.add(new f.Vector3(0, 0, speedTimesSight));
-            return this.ahead;
+        public getMoveAmount() : number {
+            return this.moveAmount;
         }
 
         public getBullets() : EnemyBullet[] {
@@ -68,14 +62,6 @@ namespace doomClone {
             });
         }
 
-        private async initSounds() : Promise<void> {
-            this.attackSound = await f.Audio.load("../../sounds/decademonAttack.wav");
-            this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
-            this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
-            this.componentAudio = new f.ComponentAudio(this.attackedSound);
-            this.addComponent(this.componentAudio);
-        }
-
         public initEnemy(x : number, z : number) : void {
             let enemyComponentTransform: f.ComponentTransform = new f.ComponentTransform(
                 f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0)));
@@ -88,6 +74,14 @@ namespace doomClone {
             this.addEventListener("shotCollision", () => { this.checkShotCollision() }, true);
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
             f.Loop.addEventListener(f.EVENT.LOOP_FRAME, this.checkPlayerPositionRelativeToRadius);
+        }
+
+        private async initSounds() : Promise<void> {
+            this.attackSound = await f.Audio.load("../../sounds/decademonAttack.wav");
+            this.dyingSound = await f.Audio.load("../../sounds/decademonDead.wav");
+            this.attackedSound = await f.Audio.load("../../sounds/decademonShot.wav");
+            this.componentAudio = new f.ComponentAudio(this.attackedSound);
+            this.addComponent(this.componentAudio);
         }
 
         private initSprites() : void {
@@ -196,12 +190,11 @@ namespace doomClone {
         private idle() : void {
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.setFrameDirection(1);
-            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
         }
 
         private hunt() : void {
-            this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(this.speed * f.Loop.timeFrameReal);
+            this.moveAmount = this.speed * f.Loop.timeFrameGame;
+            this.mtxLocal.translateZ(this.moveAmount);
             this.idleSprites.showFrame(0);
             this.idleSprites.setFrameDirection(0);
         }
@@ -209,13 +202,12 @@ namespace doomClone {
         private flee() : void {
             this.addAndRemoveSprites(this.idleSprites);
             this.idleSprites.showFrame(3);
-            // this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
-            this.mtxLocal.translateZ(-this.speed * f.Loop.timeFrameReal);
+            this.moveAmount = -this.speed * f.Loop.timeFrameGame;
+            this.mtxLocal.translateZ(this.moveAmount);
         }
 
         private attack() : void {
             if(!this.player.getIsDead() && this.isAlive && this.attackTimer === null) {
-                this.mtxLocal.lookAt(this.player.mtxLocal.translation, f.Vector3.Z());
                 this.attackTimer = new f.Timer(f.Time.game, 1000, 1, () => {
                     this.addAndRemoveSprites(this.shootSprites);
                     this.componentAudio.audio = this.attackSound;
@@ -282,10 +274,12 @@ namespace doomClone {
                 if(bullet.getRange() > 0) {
                     if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
                         this.addAndRemoveSprites(this.hitSprites);
+                        bullet.playExplosionAnimation();
                         this.player.deleteCertainBullet(bullet);
                         this.setHealth(bullet.getDamage());
                     }
                 } else {
+                    bullet.playExplosionAnimation();
                     this.player.deleteCertainBullet(bullet);
                 }
             });
@@ -298,14 +292,15 @@ namespace doomClone {
         private checkPlayerPositionRelativeToRadius = () => {
             this.checkWallCollision();
             let playerTranslation : f.Vector3 = this.player.mtxLocal.translation;
+            this.mtxLocal.lookAt(playerTranslation, f.Vector3.Z(), true);
             if(this.isAlive) {
-                if (this.isObjectColliding(playerTranslation, this.flightRadius)
+                if (this.isObjectColliding(playerTranslation, EnemyRadius.FLIGHT)
                 ) {
                     this.currentState = 'flight';
-                } else if (this.isObjectColliding(playerTranslation, this.attackRadius)
+                } else if (this.isObjectColliding(playerTranslation, EnemyRadius.ATTACK)
                 ) {
                     this.currentState = 'attack';
-                } else if (this.isObjectColliding(playerTranslation, this.aggroRadius)) {
+                } else if (this.isObjectColliding(playerTranslation, EnemyRadius.AGGRO)) {
                     this.currentState = 'hunt';
                 } else {
                     this.currentState = 'idle';
