@@ -95,12 +95,20 @@ var doomClone;
             this.gameCanvas.setAttribute("style", "opacity: 25%;");
             this.HUD.setAttribute("class", "invisible");
             this.pauseMenu.setAttribute("style", "display: flex;");
+            this.player.setIsGamePaused(true);
+            this.enemies.forEach(enemy => {
+                enemy.setIsGamePaused(true);
+            });
         }
         unpause() {
             this.isPaused = false;
             this.HUD.setAttribute("class", "");
             this.pauseMenu.setAttribute("style", "display: none;");
             this.styleCanvas();
+            this.player.setIsGamePaused(false);
+            this.enemies.forEach(enemy => {
+                enemy.setIsGamePaused(false);
+            });
         }
         styleCanvas() {
             this.gameCanvas.setAttribute("style", "opacity: 100%; z-index: 90;  width:" + window.innerWidth + "px; height:" + window.innerHeight + "px;");

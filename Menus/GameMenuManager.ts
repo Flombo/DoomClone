@@ -116,6 +116,10 @@ namespace doomClone {
             this.gameCanvas.setAttribute("style", "opacity: 25%;");
             this.HUD.setAttribute("class", "invisible");
             this.pauseMenu.setAttribute("style", "display: flex;");
+            this.player.setIsGamePaused(true);
+            this.enemies.forEach(enemy => {
+               enemy.setIsGamePaused(true);
+            });
         }
 
         private unpause() : void {
@@ -123,6 +127,10 @@ namespace doomClone {
             this.HUD.setAttribute("class", "");
             this.pauseMenu.setAttribute("style", "display: none;");
             this.styleCanvas();
+            this.player.setIsGamePaused(false);
+            this.enemies.forEach(enemy => {
+                enemy.setIsGamePaused(false);
+            });
         }
 
         private styleCanvas() : void {

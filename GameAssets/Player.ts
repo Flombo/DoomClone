@@ -38,9 +38,11 @@ namespace doomClone {
 		private pistolSound : f.Audio;
 		private controlsLoader : ControlsLoader;
 		private moveAmount : number;
+		private isGamePaused : boolean;
 
 		constructor() {
 			super("Player");
+			this.isGamePaused = false;
 			this.controlsLoader = new ControlsLoader();
 			this.keyMap = new Map<string, boolean>();
 			this.playerCollisionEvent = new CustomEvent<any>("playerCollision");
@@ -50,6 +52,10 @@ namespace doomClone {
 			this.initPistolCamera();
 			this.initPortraitCamera();
 			this.initKeyHandlers();
+		}
+
+		public setIsGamePaused(isGamePaused : boolean) : void {
+			this.isGamePaused = isGamePaused;
 		}
 
 		public getPortraitSprites() : fAid.NodeSprite {
@@ -271,18 +277,22 @@ namespace doomClone {
 		private initKeyHandlers() : void {
 			this.initKeyMap();
 			window.addEventListener("keydown", (event : KeyboardEvent) => {
-				this.keyMap.set(event.code, true);
-				this.checkUserInput();
+				if(!this.isGamePaused) {
+					this.keyMap.set(event.code, true);
+					this.checkUserInput();
+				}
 			});
 			window.addEventListener("keyup", (event : KeyboardEvent) => {
-				this.pistolSprites.setFrameDirection(0);
-				this.keyMap.set(event.code, false);
-				if(event.code === f.KEYBOARD_CODE.SHIFT_LEFT){
-					this.walkSpeed = SpeedTypes.WALK;
-					if(this.stamina < 100) {
-						new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
-							this.relax();
-						});
+				if(!this.isGamePaused) {
+					this.pistolSprites.setFrameDirection(0);
+					this.keyMap.set(event.code, false);
+					if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
+						this.walkSpeed = SpeedTypes.WALK;
+						if (this.stamina < 100) {
+							new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
+								this.relax();
+							});
+						}
 					}
 				}
 			});

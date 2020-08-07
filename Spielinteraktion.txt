@@ -1,0 +1,3 @@
+Der Spieler bewegt sich standardmäßig mit den Pfeiltasten, schießt mit der linken
+Steuerungstaste, sprintet mit der linken Shift-Taste und interagiert mit der Leertaste mit der
+Tür. Die Tastenbelegung kann im Controls-Menü gewechselt werden. Ziel des Spiels ist alle Gegner zu töten, bevor der Spieler selbst stirbt.

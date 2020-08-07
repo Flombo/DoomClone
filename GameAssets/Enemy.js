@@ -7,7 +7,7 @@ var doomClone;
     (function (EnemyRadius) {
         EnemyRadius[EnemyRadius["AGGRO"] = 10] = "AGGRO";
         EnemyRadius[EnemyRadius["ATTACK"] = 5] = "ATTACK";
-        EnemyRadius[EnemyRadius["FLIGHT"] = 3] = "FLIGHT";
+        EnemyRadius[EnemyRadius["FLIGHT"] = 2.5] = "FLIGHT";
     })(EnemyRadius || (EnemyRadius = {}));
     class Enemy extends f.Node {
         constructor(player, x, z) {
@@ -15,7 +15,7 @@ var doomClone;
             this.speed = 5 / 1000;
             this.health = 20;
             this.checkCurrentState = () => {
-                if (this.isAlive) {
+                if (!this.isGamePaused && this.isAlive) {
                     switch (this.currentState) {
                         case 'hunt':
                             this.hunt();
@@ -33,21 +33,23 @@ var doomClone;
                 }
             };
             this.checkShotCollision = () => {
-                let projectiles = this.player.getCurrentBullets();
-                projectiles.forEach(bullet => {
-                    if (bullet.getRange() > 0) {
-                        if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
-                            this.addAndRemoveSprites(this.hitSprites);
+                if (!this.isGamePaused) {
+                    let projectiles = this.player.getCurrentBullets();
+                    projectiles.forEach(bullet => {
+                        if (bullet.getRange() > 0) {
+                            if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
+                                this.addAndRemoveSprites(this.hitSprites);
+                                bullet.playExplosionAnimation();
+                                this.player.deleteCertainBullet(bullet);
+                                this.setHealth(bullet.getDamage());
+                            }
+                        }
+                        else {
                             bullet.playExplosionAnimation();
                             this.player.deleteCertainBullet(bullet);
-                            this.setHealth(bullet.getDamage());
                         }
-                    }
-                    else {
-                        bullet.playExplosionAnimation();
-                        this.player.deleteCertainBullet(bullet);
-                    }
-                });
+                    });
+                }
             };
             this.checkWallCollision = () => {
                 this.getParent().broadcastEvent(this.checkWallCollisionForEnemyEvent);
@@ -56,7 +58,7 @@ var doomClone;
                 this.checkWallCollision();
                 let playerTranslation = this.player.mtxLocal.translation;
                 this.mtxLocal.lookAt(playerTranslation, f.Vector3.Z(), true);
-                if (this.isAlive) {
+                if (!this.isGamePaused && this.isAlive) {
                     if (this.isObjectColliding(playerTranslation, EnemyRadius.FLIGHT)) {
                         this.currentState = 'flight';
                     }
@@ -75,10 +77,14 @@ var doomClone;
             this.attackTimer = null;
             this.currentState = 'idle';
             this.isAlive = true;
+            this.isGamePaused = false;
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent("checkWallCollisionForEnemy");
             this.initSounds();
             this.initEnemy(x, z);
+        }
+        setIsGamePaused(isGamePaused) {
+            this.isGamePaused = isGamePaused;
         }
         getMoveAmount() {
             return this.moveAmount;

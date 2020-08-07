@@ -5,7 +5,7 @@ namespace doomClone {
 
     export class Projectiles extends f.Node {
 
-        private readonly speed : number;
+        private readonly speed : number = 50 / 1000;
         private range : number;
         private readonly damage : number;
         private projectileSprites : fAid.NodeSprite;
@@ -15,7 +15,6 @@ namespace doomClone {
         constructor(
             name : string,
             startMatrix : f.Matrix4x4,
-            speed : number,
             range : number,
             damage : number,
             shotCollisionEvent : CustomEvent,
@@ -24,7 +23,6 @@ namespace doomClone {
         ) {
             super(name);
             this.range = range;
-            this.speed = speed;
             this.damage = damage;
             this.shotCollisionEvent = shotCollisionEvent;
             this.initProjectile(startMatrix, z, y);

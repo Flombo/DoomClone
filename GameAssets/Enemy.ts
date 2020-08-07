@@ -4,7 +4,7 @@ namespace doomClone {
     import fAid = FudgeAid;
 
     enum EnemyRadius {
-        AGGRO = 10, ATTACK = 5, FLIGHT = 3
+        AGGRO = 10, ATTACK = EnemyRadius.AGGRO / 2, FLIGHT = EnemyRadius.ATTACK / 2
     }
 
     export class Enemy extends f.Node{
@@ -26,6 +26,7 @@ namespace doomClone {
         private attackTimer : f.Timer
         private isAlive : boolean;
         private moveAmount : number;
+        private isGamePaused : boolean;
 
         constructor(player : Player, x : number, z : number) {
             super("Enemy");
@@ -33,10 +34,15 @@ namespace doomClone {
             this.attackTimer = null;
             this.currentState = 'idle';
             this.isAlive = true;
+            this.isGamePaused = false;
             this.bullets = [];
             this.checkWallCollisionForEnemyEvent = new CustomEvent<any>("checkWallCollisionForEnemy");
             this.initSounds();
             this.initEnemy(x,z);
+        }
+
+        public setIsGamePaused(isGamePaused : boolean) : void {
+            this.isGamePaused = isGamePaused;
         }
 
         public getMoveAmount() : number {
@@ -169,7 +175,7 @@ namespace doomClone {
         }
 
         private checkCurrentState = () => {
-            if(this.isAlive) {
+            if(!this.isGamePaused && this.isAlive) {
                 switch (this.currentState) {
                     case 'hunt':
                         this.hunt();
@@ -259,7 +265,7 @@ namespace doomClone {
             f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, this.checkCurrentState);
             this.addAndRemoveSprites(this.deathSprites);
             this.bullets.forEach(bullet => {
-                this.deleteCertainBullet(bullet);
+               this.deleteCertainBullet(bullet);
             });
             new f.Timer(f.Time.game, 1000, 1, () => {
                 if(this.getParent() !== null) {
@@ -269,20 +275,22 @@ namespace doomClone {
         }
 
         private checkShotCollision = () => {
-            let projectiles : PlayerBullet[] = this.player.getCurrentBullets();
-            projectiles.forEach(bullet => {
-                if(bullet.getRange() > 0) {
-                    if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
-                        this.addAndRemoveSprites(this.hitSprites);
+            if(!this.isGamePaused) {
+                let projectiles: PlayerBullet[] = this.player.getCurrentBullets();
+                projectiles.forEach(bullet => {
+                    if (bullet.getRange() > 0) {
+                        if (this.isObjectColliding(bullet.mtxLocal.translation, 1)) {
+                            this.addAndRemoveSprites(this.hitSprites);
+                            bullet.playExplosionAnimation();
+                            this.player.deleteCertainBullet(bullet);
+                            this.setHealth(bullet.getDamage());
+                        }
+                    } else {
                         bullet.playExplosionAnimation();
                         this.player.deleteCertainBullet(bullet);
-                        this.setHealth(bullet.getDamage());
                     }
-                } else {
-                    bullet.playExplosionAnimation();
-                    this.player.deleteCertainBullet(bullet);
-                }
-            });
+                });
+            }
         }
 
         private checkWallCollision = () => {
@@ -293,7 +301,7 @@ namespace doomClone {
             this.checkWallCollision();
             let playerTranslation : f.Vector3 = this.player.mtxLocal.translation;
             this.mtxLocal.lookAt(playerTranslation, f.Vector3.Z(), true);
-            if(this.isAlive) {
+            if(!this.isGamePaused && this.isAlive) {
                 if (this.isObjectColliding(playerTranslation, EnemyRadius.FLIGHT)
                 ) {
                     this.currentState = 'flight';

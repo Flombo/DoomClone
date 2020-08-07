@@ -4,8 +4,9 @@ var doomClone;
     var f = FudgeCore;
     var fAid = FudgeAid;
     class Projectiles extends f.Node {
-        constructor(name, startMatrix, speed, range, damage, shotCollisionEvent, z, y) {
+        constructor(name, startMatrix, range, damage, shotCollisionEvent, z, y) {
             super(name);
+            this.speed = 50 / 1000;
             this.update = () => {
                 let distanceToTravel = this.speed * f.Loop.timeFrameGame;
                 this.mtxLocal.translateZ(distanceToTravel);
@@ -13,7 +14,6 @@ var doomClone;
                 this.range--;
             };
             this.range = range;
-            this.speed = speed;
             this.damage = damage;
             this.shotCollisionEvent = shotCollisionEvent;
             this.initProjectile(startMatrix, z, y);

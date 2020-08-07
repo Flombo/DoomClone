@@ -24,7 +24,7 @@ namespace doomClone {
 
 		let enemies : Enemy[] = [];
 
-		let enemy : Enemy = new Enemy(player, -3, -3);
+		let enemy : Enemy = new Enemy(player, 7, 7);
 		root.appendChild(enemy);
 		enemies.push(enemy);
 
@@ -114,12 +114,10 @@ namespace doomClone {
 		f.Loop.addEventListener("loopFrame", renderLoop);
 		f.Loop.start(f.LOOP_MODE.TIME_GAME, 24);
 
-		let audio : f.Audio = await f.Audio.load("../../sounds/doomTheme.mp3");
-		let componentAudio : f.ComponentAudio = new f.ComponentAudio();
-		componentAudio.audio = audio;
-		root.addComponent(componentAudio);
-		componentAudio.volume = 0.25;
-		componentAudio.play(true);
+		let doomTheme : HTMLAudioElement = new Audio("../../sounds/doomTheme.mp3");
+		doomTheme.volume = 0.25;
+		doomTheme.loop = true;
+		await doomTheme.play();
 
 		function renderLoop () {
 			if(!gameMenuManager.getIsPaused()) {

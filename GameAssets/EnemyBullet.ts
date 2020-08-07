@@ -8,7 +8,6 @@ namespace doomClone {
             super(
                 "EnemyBullet",
                 startMatrix,
-                50 / 1000,
                 10,
                 2,
                 new CustomEvent<any>("enemyShotCollision"),

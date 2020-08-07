@@ -14,6 +14,7 @@ var doomClone;
             super("Player");
             this.walkSpeed = SpeedTypes.WALK;
             this.rotationSpeed = SpeedTypes.ROTATION;
+            this.isGamePaused = false;
             this.controlsLoader = new doomClone.ControlsLoader();
             this.keyMap = new Map();
             this.playerCollisionEvent = new CustomEvent("playerCollision");
@@ -23,6 +24,9 @@ var doomClone;
             this.initPistolCamera();
             this.initPortraitCamera();
             this.initKeyHandlers();
+        }
+        setIsGamePaused(isGamePaused) {
+            this.isGamePaused = isGamePaused;
         }
         getPortraitSprites() {
             return this.portraitSprites;
@@ -216,18 +220,22 @@ var doomClone;
         initKeyHandlers() {
             this.initKeyMap();
             window.addEventListener("keydown", (event) => {
-                this.keyMap.set(event.code, true);
-                this.checkUserInput();
+                if (!this.isGamePaused) {
+                    this.keyMap.set(event.code, true);
+                    this.checkUserInput();
+                }
             });
             window.addEventListener("keyup", (event) => {
-                this.pistolSprites.setFrameDirection(0);
-                this.keyMap.set(event.code, false);
-                if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
-                    this.walkSpeed = SpeedTypes.WALK;
-                    if (this.stamina < 100) {
-                        new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
-                            this.relax();
-                        });
+                if (!this.isGamePaused) {
+                    this.pistolSprites.setFrameDirection(0);
+                    this.keyMap.set(event.code, false);
+                    if (event.code === f.KEYBOARD_CODE.SHIFT_LEFT) {
+                        this.walkSpeed = SpeedTypes.WALK;
+                        if (this.stamina < 100) {
+                            new f.Timer(f.Time.game, 100, (100 - this.stamina) / 5, () => {
+                                this.relax();
+                            });
+                        }
                     }
                 }
             });

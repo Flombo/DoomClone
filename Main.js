@@ -17,7 +17,7 @@ var doomClone;
         let player = new doomClone.Player();
         root.appendChild(player);
         let enemies = [];
-        let enemy = new doomClone.Enemy(player, -3, -3);
+        let enemy = new doomClone.Enemy(player, 7, 7);
         root.appendChild(enemy);
         enemies.push(enemy);
         let enemy1 = new doomClone.Enemy(player, 10, 10);
@@ -91,12 +91,10 @@ var doomClone;
         f.AudioManager.default.listen(player.getComponent(f.ComponentAudioListener));
         f.Loop.addEventListener("loopFrame", renderLoop);
         f.Loop.start(f.LOOP_MODE.TIME_GAME, 24);
-        let audio = await f.Audio.load("../../sounds/doomTheme.mp3");
-        let componentAudio = new f.ComponentAudio();
-        componentAudio.audio = audio;
-        root.addComponent(componentAudio);
-        componentAudio.volume = 0.25;
-        componentAudio.play(true);
+        let doomTheme = new Audio("../../sounds/doomTheme.mp3");
+        doomTheme.volume = 0.25;
+        doomTheme.loop = true;
+        await doomTheme.play();
         function renderLoop() {
             if (!gameMenuManager.getIsPaused()) {
                 if (!player.getIsDead()) {
