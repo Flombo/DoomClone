@@ -11,6 +11,8 @@ Link zum Spiel : https://flombo.github.io/DoomClone/Templates/Menus/MainMenu.htm
 
 # Designdokument
 
+Im Designdokument wird das Spielprinzip erklärt, die Steuerung, die Konzeption und die einzelnen Kategorien zum Leistungsnachweis
+
 Link zum Designdokument : https://github.com/Flombo/DoomClone/blob/master/DesignDocuments/Prima%20Designdokument.pdf
 
 # Sourcecode
