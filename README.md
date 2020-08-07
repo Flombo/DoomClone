@@ -15,6 +15,10 @@ Im Designdokument wird das Spielprinzip erklärt, die Steuerung, die Konzeption 
 
 Link zum Designdokument : https://github.com/Flombo/DoomClone/blob/master/DesignDocuments/Prima%20Designdokument.pdf
 
+# Gepacktes Archiv
+
+Link zum Archiv : https://github.com/Flombo/DoomClone/blob/master/DoomClone.rar
+
 # Sourcecode
   
 Link zu den GameAssets : https://github.com/Flombo/DoomClone/tree/master/GameAssets
