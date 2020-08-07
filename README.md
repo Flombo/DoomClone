@@ -6,22 +6,22 @@ Der Spieler bewegt sich standardmäßig mit den Pfeiltasten fort, schießt mit d
 öffnet die Tür mit der Leertaste und sprintet mit der linken Shifttaste. Die Tastenbelegung kann im Controls-Menü
 konfiguriert werden.
 
-Link : https://flombo.github.io/DoomClone/Templates/Menus/MainMenu.html
+Link zum Spiel : https://flombo.github.io/DoomClone/Templates/Menus/MainMenu.html
 
 # Designdokument
 
-Link : https://github.com/Flombo/DoomClone/blob/master/DesignDocuments/Prima%20Designdokument.pdf
+Link zum Designdokument : https://github.com/Flombo/DoomClone/blob/master/DesignDocuments/Prima%20Designdokument.pdf
 
 # Sourcecode
   
-  GameAssets : https://github.com/Flombo/DoomClone/tree/master/GameAssets
+Link zu den GameAssets : https://github.com/Flombo/DoomClone/tree/master/GameAssets
   
-  Main.ts : https://github.com/Flombo/DoomClone/blob/master/Main.ts
+Link zu Main.ts : https://github.com/Flombo/DoomClone/blob/master/Main.ts
   
-  GameMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/GameMenuManager.ts
+Link zum GameMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/GameMenuManager.ts
   
-  SuccessAndDeathMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/SuccessAndDeathMenuManager.ts
+Link zum SuccessAndDeathMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/SuccessAndDeathMenuManager.ts
   
-  ControlMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/ControlMenuManager.ts
+Link zum ControlMenuManager : https://github.com/Flombo/DoomClone/blob/master/Menus/ControlMenuManager.ts
   
-  ControlsLoader : https://github.com/Flombo/DoomClone/blob/master/Helper/ControlsLoader.ts
+Link zum ControlsLoader : https://github.com/Flombo/DoomClone/blob/master/Helper/ControlsLoader.ts
