@@ -5,7 +5,7 @@ Bei diesem Spiel handelt es sich um einen Klon des Spiel Dooms.
 Ziel des Spiels ist alle Gegner zu töten bevor der Spieler selbst stirbt.
 Der Spieler bewegt sich standardmäßig mit den Pfeiltasten fort, schießt mit der rechten Steuerungstaste,
 öffnet die Tür mit der Leertaste und sprintet mit der linken Shifttaste. Die Tastenbelegung kann im Controls-Menü
-konfiguriert werden.
+konfiguriert werden. Mit der Escapetaste kann das Spiel pausiert werden.
 
 Link zum Spiel : https://flombo.github.io/DoomClone/Templates/Menus/MainMenu.html
 
