@@ -1,5 +1,6 @@
 # doomClone
 Endabgabe für das WPM PRIMA
+
 Bei diesem Spiel handelt es sich um einen Klon des Spiel Dooms.
 Ziel des Spiels ist alle Gegner zu töten bevor der Spieler selbst stirbt.
 Der Spieler bewegt sich standardmäßig mit den Pfeiltasten fort, schießt mit der rechten Steuerungstaste,
