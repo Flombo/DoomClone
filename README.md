@@ -1,4 +1,4 @@
-# doomClone
+# DoomClone
 Endabgabe für das WPM PRIMA
 
 Bei diesem Spiel handelt es sich um einen Klon des Spiel Dooms.
